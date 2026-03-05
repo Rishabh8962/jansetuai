@@ -1,17 +1,19 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Camera, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star } from 'lucide-react';
+import { MapPin, Camera, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CATEGORIES, CATEGORY_LABELS, CATEGORY_DEPARTMENTS, getCategoryIcon, getStatusColor, type ComplaintCategory, type Complaint } from '@/data/mockData';
-import { getComplaints, addComplaint } from '@/data/store';
+import { getComplaints, addComplaint, getNotifications, getCitizenReport, markNotificationRead } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
+import { useStoreRefresh } from '@/hooks/useStore';
 
-type View = 'home' | 'report' | 'track' | 'detail' | 'success';
+type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
 export default function CitizenApp() {
+  useStoreRefresh();
   const navigate = useNavigate();
   const [view, setView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | ''>('');
@@ -20,9 +22,12 @@ export default function CitizenApp() {
   const [newComplaintId, setNewComplaintId] = useState('');
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [reportComplaintId, setReportComplaintId] = useState('');
   const complaints = getComplaints();
+  const citizenNotifications = getNotifications('citizen');
+  const unreadCount = citizenNotifications.filter(n => !n.read).length;
 
-  const myComplaints = complaints.slice(0, 15); // simulate user's complaints
+  const myComplaints = complaints.slice(0, 15);
 
   const handleSubmit = useCallback(() => {
     if (!selectedCategory) return;
@@ -72,6 +77,8 @@ export default function CitizenApp() {
     }, 2000);
   };
 
+  const report = reportComplaintId ? getCitizenReport(reportComplaintId) : null;
+
   return (
     <div className="min-h-screen bg-background cyber-grid">
       {/* Header */}
@@ -89,7 +96,14 @@ export default function CitizenApp() {
           <h1 className="text-sm font-semibold tracking-wide">
             <span className="text-primary">PS</span>-CRM Citizen
           </h1>
-          <div className="w-5" />
+          <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -97,7 +111,6 @@ export default function CitizenApp() {
         <AnimatePresence mode="wait">
           {view === 'home' && (
             <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
-              {/* Hero */}
               <div className="text-center py-6">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center glow-border">
                   <MapPin className="w-8 h-8 text-primary" />
@@ -106,7 +119,6 @@ export default function CitizenApp() {
                 <p className="text-sm text-muted-foreground">Civic issues in your neighborhood</p>
               </div>
 
-              {/* Actions */}
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setView('report')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <AlertTriangle className="w-6 h-6 text-warning mb-3 group-hover:scale-110 transition-transform" />
@@ -120,7 +132,24 @@ export default function CitizenApp() {
                 </button>
               </div>
 
-              {/* Recent */}
+              {/* Notifications Banner */}
+              {unreadCount > 0 && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setView('notifications')}
+                  className="w-full glass-card p-3 border-primary/30 flex items-center gap-3 hover:border-primary/50 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Bell className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="text-sm font-medium">You have {unreadCount} new notification{unreadCount > 1 ? 's' : ''}</div>
+                    <div className="text-xs text-muted-foreground">Tap to view updates on your complaints</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </motion.button>
+              )}
+
               <div>
                 <div className="section-title mb-3">Your Recent Complaints</div>
                 <div className="space-y-2">
@@ -146,7 +175,6 @@ export default function CitizenApp() {
           {view === 'report' && (
             <motion.div key="report" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-5">
               <h2 className="text-xl font-bold">Report an Issue</h2>
-
               <div className="space-y-4">
                 <div>
                   <label className="section-title mb-2 block">Issue Category</label>
@@ -163,13 +191,11 @@ export default function CitizenApp() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div>
                   <label className="section-title mb-2 block">Description</label>
                   <Textarea value={description} onChange={e => setDescription(e.target.value)}
                     placeholder="Describe the issue..." className="bg-card border-border min-h-[100px]" />
                 </div>
-
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 gap-2 border-border">
                     <Camera className="w-4 h-4" /> Upload Photo
@@ -179,7 +205,6 @@ export default function CitizenApp() {
                     <Mic className="w-4 h-4" /> {isRecording ? 'Listening...' : 'Voice'}
                   </Button>
                 </div>
-
                 <div className="glass-card p-3 flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-primary" />
                   <div>
@@ -188,7 +213,6 @@ export default function CitizenApp() {
                   </div>
                   <div className="status-dot-active ml-auto" />
                 </div>
-
                 {selectedCategory && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                     className="glass-card p-3 border-primary/30">
@@ -204,7 +228,6 @@ export default function CitizenApp() {
                     </div>
                   </motion.div>
                 )}
-
                 <Button onClick={handleSubmit} disabled={!selectedCategory}
                   className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                   <Send className="w-4 h-4" /> Submit Complaint
@@ -305,6 +328,14 @@ export default function CitizenApp() {
                 </div>
               )}
 
+              {/* View Full Report button if completed */}
+              {selectedComplaint.status === 'completed' && (
+                <Button onClick={() => { setReportComplaintId(selectedComplaint.id); setView('full-report'); }}
+                  className="w-full gap-2 bg-primary text-primary-foreground">
+                  <FileText className="w-4 h-4" /> View Full Report
+                </Button>
+              )}
+
               {selectedComplaint.citizenRating && (
                 <div className="glass-card p-4">
                   <div className="section-title mb-2">Your Rating</div>
@@ -313,6 +344,105 @@ export default function CitizenApp() {
                       <Star key={s} className={`w-5 h-5 ${s <= selectedComplaint.citizenRating! ? 'text-warning fill-warning' : 'text-muted'}`} />
                     ))}
                   </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {view === 'notifications' && (
+            <motion.div key="notifications" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
+              <h2 className="text-xl font-bold">Notifications</h2>
+              {citizenNotifications.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No notifications yet</p>
+                  <p className="text-xs mt-1">Submit a complaint to receive updates</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {citizenNotifications.map(n => (
+                    <button key={n.id} onClick={() => {
+                      markNotificationRead(n.id);
+                      const c = complaints.find(x => x.id === n.complaintId);
+                      if (c) { setSelectedComplaint(c); setView('detail'); }
+                    }}
+                      className={`glass-card p-3 w-full text-left space-y-1 transition-colors ${!n.read ? 'border-primary/40' : 'opacity-70'}`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">{n.title}</span>
+                        {!n.read && <div className="w-2 h-2 rounded-full bg-primary" />}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{n.message}</p>
+                      <div className="text-[10px] text-muted-foreground font-mono">{new Date(n.timestamp).toLocaleString()}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {view === 'full-report' && (
+            <motion.div key="full-report" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
+              <h2 className="text-xl font-bold">Full Resolution Report</h2>
+              {report ? (
+                <div className="space-y-3">
+                  <div className="glass-card p-4 border-success/30 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-6 h-6 text-success" />
+                      <span className="font-semibold text-success">Issue Resolved & Approved</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div className="text-xs text-muted-foreground">Complaint ID</div>
+                        <div className="font-mono font-bold">{report.complaintId}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Category</div>
+                        <div className="font-medium capitalize">{report.category.replace('_', ' ')}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Department</div>
+                        <div>{report.department}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Assigned Worker</div>
+                        <div>{report.assignedWorker}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Submitted</div>
+                        <div className="text-xs font-mono">{new Date(report.submittedAt).toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Resolved</div>
+                        <div className="text-xs font-mono">{new Date(report.resolvedAt).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Description</div>
+                      <p className="text-sm">{report.description}</p>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Resolution Time</div>
+                      <p className="text-sm font-mono">{report.resolutionTime} hours</p>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Admin Review Notes</div>
+                      <p className="text-sm text-success">{report.adminNotes}</p>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Repair Proof</div>
+                      <div className="w-full h-32 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
+                        📷 Repair photo uploaded by worker
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="outline" onClick={() => setView('home')} className="w-full border-border">Back to Home</Button>
+                </div>
+              ) : (
+                <div className="glass-card p-6 text-center">
+                  <Clock className="w-8 h-8 mx-auto mb-2 text-warning" />
+                  <p className="text-sm font-medium">Report Not Yet Available</p>
+                  <p className="text-xs text-muted-foreground mt-1">The admin has not yet reviewed and approved this complaint. You'll be notified when the full report is ready.</p>
+                  <Button variant="outline" onClick={() => setView('home')} className="mt-4 border-border">Back to Home</Button>
                 </div>
               )}
             </motion.div>
@@ -330,11 +460,13 @@ export default function CitizenApp() {
                 <div className="text-xs text-muted-foreground">Your Complaint ID</div>
                 <div className="text-2xl font-mono font-bold text-primary">{newComplaintId}</div>
               </div>
-              <p className="text-sm text-muted-foreground">You will receive notifications as your complaint progresses.</p>
+              <p className="text-sm text-muted-foreground">A worker will be auto-assigned shortly. Check notifications for updates!</p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => setView('home')} className="border-border">Home</Button>
-                <Button onClick={() => { setSelectedComplaint(getComplaints()[0]); setView('detail'); }}
-                  className="bg-primary text-primary-foreground">Track Status</Button>
+                <Button onClick={() => setView('notifications')}
+                  className="bg-primary text-primary-foreground gap-1">
+                  <Bell className="w-4 h-4" /> Notifications
+                </Button>
               </div>
             </motion.div>
           )}

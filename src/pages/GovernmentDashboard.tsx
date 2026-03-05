@@ -1,20 +1,27 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap } from 'lucide-react';
+import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, Bell, ClipboardCheck, ThumbsUp, ThumbsDown, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import { CATEGORY_LABELS, getCategoryIcon, type ComplaintCategory, type Complaint } from '@/data/mockData';
-import { getComplaints, getDepartments, getWorkers } from '@/data/store';
+import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getNotifications, getAllReviews } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
+import { useStoreRefresh } from '@/hooks/useStore';
 import CityMap from '@/components/CityMap';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
-type Tab = 'overview' | 'analytics' | 'map' | 'departments';
+type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review';
 
 export default function GovernmentDashboard() {
+  useStoreRefresh();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('overview');
   const complaints = getComplaints();
   const departments = getDepartments();
   const workers = getWorkers();
+  const reviewQueue = getReviewQueue();
+  const adminNotifications = getNotifications('admin');
+  const unreadCount = adminNotifications.filter(n => !n.read).length;
 
   const stats = useMemo(() => {
     const total = complaints.length;
@@ -62,11 +69,12 @@ export default function GovernmentDashboard() {
     ];
   }, [complaints]);
 
-  const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
+  const tabs: { id: Tab; label: string; icon: typeof BarChart3; badge?: number }[] = [
     { id: 'overview', label: 'Overview', icon: Activity },
+    { id: 'review', label: 'Review', icon: ClipboardCheck, badge: reviewQueue.length },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'map', label: 'City Map', icon: MapPin },
-    { id: 'departments', label: 'Departments', icon: Building2 },
+    { id: 'departments', label: 'Depts', icon: Building2 },
   ];
 
   const CHART_COLORS = ['hsl(175, 80%, 50%)', 'hsl(260, 70%, 60%)', 'hsl(150, 70%, 45%)', 'hsl(38, 92%, 55%)', 'hsl(0, 72%, 55%)', 'hsl(200, 80%, 55%)'];
@@ -86,17 +94,30 @@ export default function GovernmentDashboard() {
             <div className="text-xs text-muted-foreground">Smart City Governance Platform</div>
           </div>
           <div className="flex items-center gap-2">
+            {reviewQueue.length > 0 && (
+              <button onClick={() => setTab('review')} className="relative">
+                <ClipboardCheck className="w-5 h-5 text-warning" />
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-warning text-[10px] font-bold text-warning-foreground flex items-center justify-center">
+                  {reviewQueue.length}
+                </span>
+              </button>
+            )}
             <div className="status-dot-active" />
             <span className="text-xs text-muted-foreground">LIVE</span>
           </div>
         </div>
         {/* Tabs */}
-        <div className="flex px-4 gap-1 pb-2">
+        <div className="flex px-4 gap-1 pb-2 overflow-x-auto">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap relative
                 ${tab === t.id ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
               <t.icon className="w-3.5 h-3.5" /> {t.label}
+              {t.badge && t.badge > 0 && (
+                <span className="w-4 h-4 rounded-full bg-warning text-[10px] font-bold text-warning-foreground flex items-center justify-center">
+                  {t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -105,6 +126,19 @@ export default function GovernmentDashboard() {
       <div className="p-4 max-w-7xl mx-auto">
         {tab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            {/* Review alert */}
+            {reviewQueue.length > 0 && (
+              <motion.button initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                onClick={() => setTab('review')}
+                className="w-full glass-card p-3 border-warning/40 flex items-center gap-3 hover:border-warning/60 transition-colors">
+                <ClipboardCheck className="w-5 h-5 text-warning" />
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-semibold text-warning">{reviewQueue.length} complaint{reviewQueue.length > 1 ? 's' : ''} awaiting review</div>
+                  <div className="text-xs text-muted-foreground">Workers have completed repairs. Review and approve to send reports to citizens.</div>
+                </div>
+              </motion.button>
+            )}
+
             {/* Key Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
@@ -244,6 +278,8 @@ export default function GovernmentDashboard() {
             </div>
           </motion.div>
         )}
+
+        {tab === 'review' && <ReviewTab />}
 
         {tab === 'analytics' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
@@ -399,4 +435,120 @@ function getPriorityColor(priority: string) {
     critical: 'bg-destructive/20 text-destructive',
   };
   return colors[priority] || '';
+}
+
+// Review Tab Component
+function ReviewTab() {
+  const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
+  const reviewQueue = getReviewQueue();
+  const complaints = getComplaints();
+  const allReviews = getAllReviews();
+
+  const handleApprove = (complaintId: string) => {
+    const notes = adminNotes[complaintId] || 'Repair verified and approved. Issue resolved satisfactorily.';
+    approveReview(complaintId, notes);
+    setAdminNotes(prev => { const n = { ...prev }; delete n[complaintId]; return n; });
+  };
+
+  const handleReject = (complaintId: string) => {
+    const notes = adminNotes[complaintId] || 'Repair not satisfactory. Please revisit the issue.';
+    rejectReview(complaintId, notes);
+    setAdminNotes(prev => { const n = { ...prev }; delete n[complaintId]; return n; });
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <ClipboardCheck className="w-5 h-5 text-primary" />
+        <h2 className="text-lg font-bold">Review & Approve Repairs</h2>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Workers have completed repairs and uploaded proof. Review each case and approve to send a full resolution report to the citizen.
+      </p>
+
+      {reviewQueue.length === 0 ? (
+        <div className="glass-card p-8 text-center">
+          <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-success opacity-50" />
+          <p className="text-sm text-muted-foreground">No pending reviews. All caught up! 🎉</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reviewQueue.map(item => {
+            const complaint = complaints.find(c => c.id === item.complaintId);
+            if (!complaint) return null;
+            return (
+              <div key={item.complaintId} className="glass-card p-4 space-y-3 border-warning/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{getCategoryIcon(complaint.category)}</span>
+                    <div>
+                      <div className="font-semibold text-sm">{complaint.id} – {CATEGORY_LABELS[complaint.category]}</div>
+                      <div className="text-xs text-muted-foreground">{complaint.ward} · {complaint.assignedWorker} · {complaint.department}</div>
+                    </div>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-warning/20 text-warning font-medium">Pending Review</span>
+                </div>
+
+                <div className="text-sm text-muted-foreground">{complaint.description}</div>
+
+                <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+                  <div className="text-xs font-medium text-primary">Worker's Report</div>
+                  <p className="text-sm">{item.workerNotes}</p>
+                  <div className="w-full h-24 bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
+                    📷 Worker repair photo
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">Completed: {new Date(item.completedAt).toLocaleString()}</div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Admin Notes (sent to citizen)</label>
+                  <Textarea
+                    value={adminNotes[item.complaintId] || ''}
+                    onChange={e => setAdminNotes(prev => ({ ...prev, [item.complaintId]: e.target.value }))}
+                    placeholder="Repair verified. Issue resolved satisfactorily."
+                    className="bg-card border-border text-sm min-h-[60px]"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={() => handleApprove(item.complaintId)}
+                    className="flex-1 gap-2 bg-success text-success-foreground hover:bg-success/90">
+                    <ThumbsUp className="w-4 h-4" /> Approve & Send Report
+                  </Button>
+                  <Button onClick={() => handleReject(item.complaintId)}
+                    variant="outline" className="flex-1 gap-2 border-destructive/50 text-destructive hover:bg-destructive/10">
+                    <ThumbsDown className="w-4 h-4" /> Reject & Reassign
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Recently reviewed */}
+      {allReviews.filter(r => r.reviewed).length > 0 && (
+        <div>
+          <div className="section-title mb-3 mt-6">Recently Reviewed</div>
+          <div className="space-y-2">
+            {allReviews.filter(r => r.reviewed).slice(0, 5).map(r => {
+              const c = complaints.find(x => x.id === r.complaintId);
+              return (
+                <div key={r.complaintId} className={`glass-card p-3 flex items-center gap-3 ${r.approved ? 'border-success/20' : 'border-destructive/20'}`}>
+                  <span className={`text-lg ${r.approved ? '' : 'opacity-50'}`}>{c ? getCategoryIcon(c.category) : '📋'}</span>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">{r.complaintId}</div>
+                    <div className="text-xs text-muted-foreground">{r.adminNotes}</div>
+                  </div>
+                  <span className={`text-xs font-medium ${r.approved ? 'text-success' : 'text-destructive'}`}>
+                    {r.approved ? '✓ Approved' : '✗ Rejected'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
 }
