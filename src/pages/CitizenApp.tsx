@@ -1,0 +1,345 @@
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Camera, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CATEGORIES, CATEGORY_LABELS, CATEGORY_DEPARTMENTS, getCategoryIcon, getStatusColor, type ComplaintCategory, type Complaint } from '@/data/mockData';
+import { getComplaints, addComplaint } from '@/data/store';
+import { useNavigate } from 'react-router-dom';
+
+type View = 'home' | 'report' | 'track' | 'detail' | 'success';
+
+export default function CitizenApp() {
+  const navigate = useNavigate();
+  const [view, setView] = useState<View>('home');
+  const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | ''>('');
+  const [description, setDescription] = useState('');
+  const [trackingId, setTrackingId] = useState('');
+  const [newComplaintId, setNewComplaintId] = useState('');
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const complaints = getComplaints();
+
+  const myComplaints = complaints.slice(0, 15); // simulate user's complaints
+
+  const handleSubmit = useCallback(() => {
+    if (!selectedCategory) return;
+    const id = `CMP-${String(complaints.length + 1).padStart(5, '0')}`;
+    const newComplaint: Complaint = {
+      id,
+      userId: 'USR-SELF',
+      citizenName: 'You',
+      category: selectedCategory,
+      description: description || `${CATEGORY_LABELS[selectedCategory]} reported`,
+      imageUrl: '/placeholder.svg',
+      lat: 12.9716 + (Math.random() - 0.5) * 0.1,
+      lng: 77.5946 + (Math.random() - 0.5) * 0.1,
+      ward: 'Ward 3',
+      status: 'submitted',
+      priority: 'medium',
+      department: CATEGORY_DEPARTMENTS[selectedCategory],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      aiConfidence: 0.92,
+      aiDetectedCategory: selectedCategory,
+    };
+    addComplaint(newComplaint);
+    setNewComplaintId(id);
+    setView('success');
+    setSelectedCategory('');
+    setDescription('');
+  }, [selectedCategory, description, complaints.length]);
+
+  const handleTrack = () => {
+    const found = complaints.find(c => c.id === trackingId.toUpperCase());
+    if (found) {
+      setSelectedComplaint(found);
+      setView('detail');
+    }
+  };
+
+  const statusSteps: Complaint['status'][] = ['submitted', 'assigned', 'in_progress', 'completed'];
+  const statusLabels = { submitted: 'Submitted', assigned: 'Assigned', in_progress: 'In Progress', completed: 'Completed' };
+
+  const simulateVoice = () => {
+    setIsRecording(true);
+    setTimeout(() => {
+      setDescription('There is a large pothole near the main junction causing traffic issues');
+      setSelectedCategory('pothole');
+      setIsRecording(false);
+    }, 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-background cyber-grid">
+      {/* Header */}
+      <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
+        <div className="flex items-center justify-between px-4 py-3">
+          {view !== 'home' ? (
+            <button onClick={() => setView('home')} className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          ) : (
+            <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <h1 className="text-sm font-semibold tracking-wide">
+            <span className="text-primary">PS</span>-CRM Citizen
+          </h1>
+          <div className="w-5" />
+        </div>
+      </div>
+
+      <div className="max-w-lg mx-auto p-4">
+        <AnimatePresence mode="wait">
+          {view === 'home' && (
+            <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
+              {/* Hero */}
+              <div className="text-center py-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center glow-border">
+                  <MapPin className="w-8 h-8 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold mb-1">Report & Track</h2>
+                <p className="text-sm text-muted-foreground">Civic issues in your neighborhood</p>
+              </div>
+
+              {/* Actions */}
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => setView('report')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
+                  <AlertTriangle className="w-6 h-6 text-warning mb-3 group-hover:scale-110 transition-transform" />
+                  <div className="font-semibold text-sm">Report Issue</div>
+                  <div className="text-xs text-muted-foreground mt-1">Submit a complaint</div>
+                </button>
+                <button onClick={() => setView('track')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
+                  <Search className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+                  <div className="font-semibold text-sm">Track Status</div>
+                  <div className="text-xs text-muted-foreground mt-1">Check your complaint</div>
+                </button>
+              </div>
+
+              {/* Recent */}
+              <div>
+                <div className="section-title mb-3">Your Recent Complaints</div>
+                <div className="space-y-2">
+                  {myComplaints.slice(0, 5).map(c => (
+                    <button key={c.id} onClick={() => { setSelectedComplaint(c); setView('detail'); }}
+                      className="glass-card p-3 w-full text-left flex items-center gap-3 hover:border-primary/30 transition-colors">
+                      <span className="text-xl">{getCategoryIcon(c.category)}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{CATEGORY_LABELS[c.category]}</div>
+                        <div className="text-xs text-muted-foreground">{c.id} · {c.ward}</div>
+                      </div>
+                      <div className={`text-xs font-medium ${getStatusColor(c.status)}`}>
+                        {statusLabels[c.status]}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'report' && (
+            <motion.div key="report" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-5">
+              <h2 className="text-xl font-bold">Report an Issue</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="section-title mb-2 block">Issue Category</label>
+                  <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as ComplaintCategory)}>
+                    <SelectTrigger className="bg-card border-border">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map(cat => (
+                        <SelectItem key={cat} value={cat}>
+                          {getCategoryIcon(cat)} {CATEGORY_LABELS[cat]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="section-title mb-2 block">Description</label>
+                  <Textarea value={description} onChange={e => setDescription(e.target.value)}
+                    placeholder="Describe the issue..." className="bg-card border-border min-h-[100px]" />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1 gap-2 border-border">
+                    <Camera className="w-4 h-4" /> Upload Photo
+                  </Button>
+                  <Button variant="outline" onClick={simulateVoice}
+                    className={`flex-1 gap-2 border-border ${isRecording ? 'border-destructive text-destructive animate-pulse' : ''}`}>
+                    <Mic className="w-4 h-4" /> {isRecording ? 'Listening...' : 'Voice'}
+                  </Button>
+                </div>
+
+                <div className="glass-card p-3 flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <div>
+                    <div className="text-xs text-muted-foreground">GPS Location Detected</div>
+                    <div className="text-sm font-mono">12.9716° N, 77.5946° E</div>
+                  </div>
+                  <div className="status-dot-active ml-auto" />
+                </div>
+
+                {selectedCategory && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                    className="glass-card p-3 border-primary/30">
+                    <div className="text-xs text-muted-foreground mb-1">AI Detection</div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-primary">
+                        {getCategoryIcon(selectedCategory)} {CATEGORY_LABELS[selectedCategory]} detected
+                      </span>
+                      <span className="text-xs font-mono text-success">92% confidence</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Dept: {CATEGORY_DEPARTMENTS[selectedCategory]}
+                    </div>
+                  </motion.div>
+                )}
+
+                <Button onClick={handleSubmit} disabled={!selectedCategory}
+                  className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Send className="w-4 h-4" /> Submit Complaint
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'track' && (
+            <motion.div key="track" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-5">
+              <h2 className="text-xl font-bold">Track Complaint</h2>
+              <div className="flex gap-2">
+                <Input value={trackingId} onChange={e => setTrackingId(e.target.value)}
+                  placeholder="Enter Complaint ID (e.g. CMP-00001)" className="bg-card border-border font-mono" />
+                <Button onClick={handleTrack} className="bg-primary text-primary-foreground">
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-sm text-muted-foreground">Or select from your recent complaints:</div>
+              <div className="space-y-2">
+                {myComplaints.slice(0, 8).map(c => (
+                  <button key={c.id} onClick={() => { setSelectedComplaint(c); setView('detail'); }}
+                    className="glass-card p-3 w-full text-left flex items-center gap-3 hover:border-primary/30 transition-colors">
+                    <span className="text-lg">{getCategoryIcon(c.category)}</span>
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{CATEGORY_LABELS[c.category]}</div>
+                      <div className="text-xs font-mono text-muted-foreground">{c.id}</div>
+                    </div>
+                    <div className={`text-xs font-medium ${getStatusColor(c.status)}`}>{statusLabels[c.status]}</div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'detail' && selectedComplaint && (
+            <motion.div key="detail" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold">{selectedComplaint.id}</h2>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getStatusColor(selectedComplaint.status)} bg-current/10`}>
+                  {statusLabels[selectedComplaint.status]}
+                </span>
+              </div>
+
+              <div className="glass-card p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{getCategoryIcon(selectedComplaint.category)}</span>
+                  <div>
+                    <div className="font-semibold">{CATEGORY_LABELS[selectedComplaint.category]}</div>
+                    <div className="text-xs text-muted-foreground">{selectedComplaint.department}</div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">{selectedComplaint.description}</p>
+                <div className="flex gap-4 text-xs text-muted-foreground">
+                  <span>📍 {selectedComplaint.ward}</span>
+                  <span>📅 {new Date(selectedComplaint.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {/* Status Timeline */}
+              <div className="glass-card p-4">
+                <div className="section-title mb-4">Progress Timeline</div>
+                <div className="relative">
+                  {statusSteps.map((step, i) => {
+                    const isActive = statusSteps.indexOf(selectedComplaint.status) >= i;
+                    const isCurrent = selectedComplaint.status === step;
+                    return (
+                      <div key={step} className="flex items-start gap-3 mb-4 last:mb-0">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+                            ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
+                            ${isCurrent ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
+                            {isActive ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+                          </div>
+                          {i < 3 && <div className={`w-0.5 h-6 mt-1 ${isActive ? 'bg-primary' : 'bg-muted'}`} />}
+                        </div>
+                        <div className="pt-1">
+                          <div className={`text-sm font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {statusLabels[step]}
+                          </div>
+                          {isCurrent && (
+                            <div className="text-xs text-primary flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" /> Current status
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {selectedComplaint.assignedWorker && (
+                <div className="glass-card p-4">
+                  <div className="section-title mb-2">Assigned Worker</div>
+                  <div className="text-sm font-medium">{selectedComplaint.assignedWorker}</div>
+                  <div className="text-xs text-muted-foreground">{selectedComplaint.department}</div>
+                </div>
+              )}
+
+              {selectedComplaint.citizenRating && (
+                <div className="glass-card p-4">
+                  <div className="section-title mb-2">Your Rating</div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} className={`w-5 h-5 ${s <= selectedComplaint.citizenRating! ? 'text-warning fill-warning' : 'text-muted'}`} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {view === 'success' && (
+            <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-12 space-y-4">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}
+                className="w-20 h-20 mx-auto rounded-full bg-success/20 flex items-center justify-center">
+                <CheckCircle2 className="w-10 h-10 text-success" />
+              </motion.div>
+              <h2 className="text-2xl font-bold">Complaint Submitted!</h2>
+              <div className="glass-card p-4 inline-block">
+                <div className="text-xs text-muted-foreground">Your Complaint ID</div>
+                <div className="text-2xl font-mono font-bold text-primary">{newComplaintId}</div>
+              </div>
+              <p className="text-sm text-muted-foreground">You will receive notifications as your complaint progresses.</p>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => setView('home')} className="border-border">Home</Button>
+                <Button onClick={() => { setSelectedComplaint(getComplaints()[0]); setView('detail'); }}
+                  className="bg-primary text-primary-foreground">Track Status</Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
