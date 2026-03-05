@@ -149,6 +149,10 @@
   box-shadow: 0 0 12px hsl(175 80% 50% / 0.5);
 }
 
+#lovable-badge {
+  display: none !important;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
