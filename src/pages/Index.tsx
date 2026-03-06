@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { MapPin, Shield, Users, Wrench, BarChart3, Building2, Zap } from 'lucide-react';
+import { MapPin, Users, Wrench, BarChart3, Building2, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import jansetuLogo from '@/assets/jansetu-logo.png';
 
 const roles = [
   {
@@ -10,7 +11,7 @@ const roles = [
     icon: Users,
     path: '/citizen',
     gradient: 'from-[hsl(175,80%,50%)] to-[hsl(190,90%,45%)]',
-    features: ['Report Issues', 'Track Status', 'Voice Complaints', 'GPS Location'],
+    features: ['Report Issues', 'Track Status', 'Voice Complaints', 'AI Detection'],
   },
   {
     id: 'worker',
@@ -19,16 +20,16 @@ const roles = [
     icon: Wrench,
     path: '/worker',
     gradient: 'from-[hsl(38,92%,55%)] to-[hsl(25,95%,50%)]',
-    features: ['Task Queue', 'Navigation', 'Photo Upload', 'Status Updates'],
+    features: ['Task Queue', 'Navigation', 'Photo Upload', 'AI Verification'],
   },
   {
     id: 'dashboard',
     title: 'Command Center',
-    description: 'Analytics dashboard with maps, charts, and department management',
+    description: 'Analytics dashboard with maps, charts, AI copilot, and department management',
     icon: BarChart3,
     path: '/dashboard',
     gradient: 'from-[hsl(260,70%,60%)] to-[hsl(280,80%,55%)]',
-    features: ['Live Analytics', 'City Map', 'AI Predictions', 'Trust Scores'],
+    features: ['Live Analytics', 'City Map', 'AI Copilot', 'Trust Scores'],
   },
 ];
 
@@ -37,19 +38,16 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background cyber-grid relative overflow-hidden">
-      {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'var(--gradient-glow)' }} />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-12 md:py-20">
-        {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-border">
-              <Shield className="w-6 h-6 text-primary" />
-            </div>
+            <img src={jansetuLogo} alt="JanSetu AI Logo" className="w-16 h-16 rounded-xl" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
-            <span className="text-primary">PS</span>-CRM
+            <span className="text-foreground">JanSetu</span>{' '}
+            <span className="text-primary">AI</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
             AI-Powered Smart City Governance Platform
@@ -61,7 +59,6 @@ export default function Index() {
           </div>
         </motion.div>
 
-        {/* Role Selection */}
         <div className="grid md:grid-cols-3 gap-4">
           {roles.map((role, i) => (
             <motion.button
@@ -91,7 +88,6 @@ export default function Index() {
           ))}
         </div>
 
-        {/* Stats Strip */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
           className="mt-12 glass-card p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -99,7 +95,7 @@ export default function Index() {
               { label: 'Complaints', value: '500+', sub: 'demo dataset' },
               { label: 'Departments', value: '5', sub: 'tracked' },
               { label: 'Workers', value: '10', sub: 'field agents' },
-              { label: 'AI Models', value: '4', sub: 'active' },
+              { label: 'AI Models', value: '5', sub: 'active' },
             ].map(s => (
               <div key={s.label}>
                 <div className="text-2xl font-mono font-bold text-primary">{s.value}</div>

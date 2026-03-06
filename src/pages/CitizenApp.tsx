@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Camera, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, X } from 'lucide-react';
+import { MapPin, Camera, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,7 @@ import { CATEGORIES, CATEGORY_LABELS, CATEGORY_DEPARTMENTS, getCategoryIcon, get
 import { getComplaints, addComplaint, getNotifications, getCitizenReport, markNotificationRead } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
+import jansetuLogo from '@/assets/jansetu-logo.png';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
@@ -23,6 +24,7 @@ export default function CitizenApp() {
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [reportComplaintId, setReportComplaintId] = useState('');
+  const [imageUploaded, setImageUploaded] = useState(false);
   const complaints = getComplaints();
   const citizenNotifications = getNotifications('citizen');
   const unreadCount = citizenNotifications.filter(n => !n.read).length;
@@ -30,32 +32,44 @@ export default function CitizenApp() {
   const myComplaints = complaints.slice(0, 15);
 
   const handleSubmit = useCallback(() => {
-    if (!selectedCategory) return;
+    if (!selectedCategory && !imageUploaded) return;
     const id = `CMP-${String(complaints.length + 1).padStart(5, '0')}`;
+    const category = selectedCategory || 'pothole';
     const newComplaint: Complaint = {
       id,
       userId: 'USR-SELF',
       citizenName: 'You',
-      category: selectedCategory,
-      description: description || `${CATEGORY_LABELS[selectedCategory]} reported`,
+      category,
+      description: description || `${CATEGORY_LABELS[category]} reported via image upload`,
       imageUrl: '/placeholder.svg',
       lat: 12.9716 + (Math.random() - 0.5) * 0.1,
       lng: 77.5946 + (Math.random() - 0.5) * 0.1,
       ward: 'Ward 3',
       status: 'submitted',
       priority: 'medium',
-      department: CATEGORY_DEPARTMENTS[selectedCategory],
+      department: CATEGORY_DEPARTMENTS[category],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       aiConfidence: 0.92,
-      aiDetectedCategory: selectedCategory,
+      aiDetectedCategory: category,
     };
     addComplaint(newComplaint);
     setNewComplaintId(id);
     setView('success');
     setSelectedCategory('');
     setDescription('');
-  }, [selectedCategory, description, complaints.length]);
+    setImageUploaded(false);
+  }, [selectedCategory, description, complaints.length, imageUploaded]);
+
+  const handleImageUpload = () => {
+    setImageUploaded(true);
+    // Simulate AI auto-detection from image
+    if (!selectedCategory) {
+      const detected: ComplaintCategory[] = ['pothole', 'garbage', 'drainage', 'streetlight', 'sewage_overflow'];
+      const randomDetect = detected[Math.floor(Math.random() * detected.length)];
+      setSelectedCategory(randomDetect);
+    }
+  };
 
   const handleTrack = () => {
     const found = complaints.find(c => c.id === trackingId.toUpperCase());
@@ -65,8 +79,11 @@ export default function CitizenApp() {
     }
   };
 
-  const statusSteps: Complaint['status'][] = ['submitted', 'assigned', 'in_progress', 'completed'];
-  const statusLabels = { submitted: 'Submitted', assigned: 'Assigned', in_progress: 'In Progress', completed: 'Completed' };
+  const statusSteps: Complaint['status'][] = ['submitted', 'assigned', 'in_progress', 'under_review', 'completed'];
+  const statusLabels: Record<string, string> = {
+    submitted: 'Submitted', assigned: 'Assigned', in_progress: 'In Progress',
+    under_review: 'Under Review', rework_required: 'Rework Required', completed: 'Resolved',
+  };
 
   const simulateVoice = () => {
     setIsRecording(true);
@@ -81,7 +98,6 @@ export default function CitizenApp() {
 
   return (
     <div className="min-h-screen bg-background cyber-grid">
-      {/* Header */}
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view !== 'home' ? (
@@ -93,9 +109,12 @@ export default function CitizenApp() {
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <h1 className="text-sm font-semibold tracking-wide">
-            <span className="text-primary">PS</span>-CRM Citizen
-          </h1>
+          <div className="flex items-center gap-2">
+            <img src={jansetuLogo} alt="JanSetu AI" className="w-6 h-6 rounded" />
+            <h1 className="text-sm font-semibold tracking-wide">
+              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span>
+            </h1>
+          </div>
           <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
@@ -112,9 +131,7 @@ export default function CitizenApp() {
           {view === 'home' && (
             <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div className="text-center py-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center glow-border">
-                  <MapPin className="w-8 h-8 text-primary" />
-                </div>
+                <img src={jansetuLogo} alt="JanSetu AI" className="w-16 h-16 mx-auto mb-4 rounded-2xl" />
                 <h2 className="text-2xl font-bold mb-1">Report & Track</h2>
                 <p className="text-sm text-muted-foreground">Civic issues in your neighborhood</p>
               </div>
@@ -123,7 +140,7 @@ export default function CitizenApp() {
                 <button onClick={() => setView('report')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <AlertTriangle className="w-6 h-6 text-warning mb-3 group-hover:scale-110 transition-transform" />
                   <div className="font-semibold text-sm">Report Issue</div>
-                  <div className="text-xs text-muted-foreground mt-1">Submit a complaint</div>
+                  <div className="text-xs text-muted-foreground mt-1">Upload photo or describe</div>
                 </button>
                 <button onClick={() => setView('track')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <Search className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
@@ -132,13 +149,10 @@ export default function CitizenApp() {
                 </button>
               </div>
 
-              {/* Notifications Banner */}
               {unreadCount > 0 && (
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   onClick={() => setView('notifications')}
-                  className="w-full glass-card p-3 border-primary/30 flex items-center gap-3 hover:border-primary/50 transition-colors"
-                >
+                  className="w-full glass-card p-3 border-primary/30 flex items-center gap-3 hover:border-primary/50 transition-colors">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                     <Bell className="w-4 h-4 text-primary" />
                   </div>
@@ -176,8 +190,48 @@ export default function CitizenApp() {
             <motion.div key="report" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-5">
               <h2 className="text-xl font-bold">Report an Issue</h2>
               <div className="space-y-4">
+                {/* Image Upload - Primary action */}
                 <div>
-                  <label className="section-title mb-2 block">Issue Category</label>
+                  <label className="section-title mb-2 block">Upload Photo (AI will detect issue)</label>
+                  {!imageUploaded ? (
+                    <Button onClick={handleImageUpload} variant="outline" className="w-full h-32 border-dashed border-2 border-border flex flex-col gap-2">
+                      <Camera className="w-8 h-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Tap to upload photo or take picture</span>
+                      <span className="text-xs text-primary">AI will auto-detect the issue type</span>
+                    </Button>
+                  ) : (
+                    <div className="glass-card p-3 border-success/30 flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-success" />
+                      <div>
+                        <span className="text-sm font-medium text-success">Photo uploaded ✓</span>
+                        <div className="text-xs text-muted-foreground">AI analyzing image...</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Detection Result */}
+                {imageUploaded && selectedCategory && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                    className="glass-card p-3 border-primary/30">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Eye className="w-4 h-4 text-primary" />
+                      <div className="text-xs text-muted-foreground">AI Image Detection Result</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-primary">
+                        {getCategoryIcon(selectedCategory)} {CATEGORY_LABELS[selectedCategory]} detected
+                      </span>
+                      <span className="text-xs font-mono text-success">92% confidence</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Auto-assigned → {CATEGORY_DEPARTMENTS[selectedCategory]}
+                    </div>
+                  </motion.div>
+                )}
+
+                <div>
+                  <label className="section-title mb-2 block">Issue Category {imageUploaded && '(auto-detected)'}</label>
                   <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as ComplaintCategory)}>
                     <SelectTrigger className="bg-card border-border">
                       <SelectValue placeholder="Select category" />
@@ -192,17 +246,14 @@ export default function CitizenApp() {
                   </Select>
                 </div>
                 <div>
-                  <label className="section-title mb-2 block">Description</label>
+                  <label className="section-title mb-2 block">Description (optional)</label>
                   <Textarea value={description} onChange={e => setDescription(e.target.value)}
-                    placeholder="Describe the issue..." className="bg-card border-border min-h-[100px]" />
+                    placeholder="Describe the issue..." className="bg-card border-border min-h-[80px]" />
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 gap-2 border-border">
-                    <Camera className="w-4 h-4" /> Upload Photo
-                  </Button>
                   <Button variant="outline" onClick={simulateVoice}
                     className={`flex-1 gap-2 border-border ${isRecording ? 'border-destructive text-destructive animate-pulse' : ''}`}>
-                    <Mic className="w-4 h-4" /> {isRecording ? 'Listening...' : 'Voice'}
+                    <Mic className="w-4 h-4" /> {isRecording ? 'Listening...' : 'Voice Report'}
                   </Button>
                 </div>
                 <div className="glass-card p-3 flex items-center gap-3">
@@ -213,22 +264,8 @@ export default function CitizenApp() {
                   </div>
                   <div className="status-dot-active ml-auto" />
                 </div>
-                {selectedCategory && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                    className="glass-card p-3 border-primary/30">
-                    <div className="text-xs text-muted-foreground mb-1">AI Detection</div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-primary">
-                        {getCategoryIcon(selectedCategory)} {CATEGORY_LABELS[selectedCategory]} detected
-                      </span>
-                      <span className="text-xs font-mono text-success">92% confidence</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Dept: {CATEGORY_DEPARTMENTS[selectedCategory]}
-                    </div>
-                  </motion.div>
-                )}
-                <Button onClick={handleSubmit} disabled={!selectedCategory}
+
+                <Button onClick={handleSubmit} disabled={!selectedCategory && !imageUploaded}
                   className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                   <Send className="w-4 h-4" /> Submit Complaint
                 </Button>
@@ -292,8 +329,12 @@ export default function CitizenApp() {
                 <div className="section-title mb-4">Progress Timeline</div>
                 <div className="relative">
                   {statusSteps.map((step, i) => {
-                    const isActive = statusSteps.indexOf(selectedComplaint.status) >= i;
-                    const isCurrent = selectedComplaint.status === step;
+                    const currentIdx = selectedComplaint.status === 'rework_required'
+                      ? 2 // rework shows at in_progress level
+                      : statusSteps.indexOf(selectedComplaint.status);
+                    const isActive = currentIdx >= i;
+                    const isCurrent = selectedComplaint.status === step ||
+                      (selectedComplaint.status === 'rework_required' && step === 'in_progress');
                     return (
                       <div key={step} className="flex items-start gap-3 mb-4 last:mb-0">
                         <div className="flex flex-col items-center">
@@ -302,13 +343,18 @@ export default function CitizenApp() {
                             ${isCurrent ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
                             {isActive ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                           </div>
-                          {i < 3 && <div className={`w-0.5 h-6 mt-1 ${isActive ? 'bg-primary' : 'bg-muted'}`} />}
+                          {i < statusSteps.length - 1 && <div className={`w-0.5 h-6 mt-1 ${isActive ? 'bg-primary' : 'bg-muted'}`} />}
                         </div>
                         <div className="pt-1">
                           <div className={`text-sm font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                             {statusLabels[step]}
                           </div>
-                          {isCurrent && (
+                          {isCurrent && selectedComplaint.status === 'rework_required' && step === 'in_progress' && (
+                            <div className="text-xs text-destructive flex items-center gap-1 mt-0.5">
+                              ⚠️ Rework required – worker is revisiting
+                            </div>
+                          )}
+                          {isCurrent && selectedComplaint.status !== 'rework_required' && (
                             <div className="text-xs text-primary flex items-center gap-1 mt-0.5">
                               <Clock className="w-3 h-3" /> Current status
                             </div>
@@ -320,6 +366,17 @@ export default function CitizenApp() {
                 </div>
               </div>
 
+              {/* AI Verification info */}
+              {selectedComplaint.aiVerification && (
+                <div className={`glass-card p-4 ${selectedComplaint.aiVerification.issueStillDetected ? 'border-warning/30' : 'border-success/30'}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldCheck className="w-4 h-4 text-primary" />
+                    <div className="section-title">AI Verification Result</div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{selectedComplaint.aiVerification.verdict}</p>
+                </div>
+              )}
+
               {selectedComplaint.assignedWorker && (
                 <div className="glass-card p-4">
                   <div className="section-title mb-2">Assigned Worker</div>
@@ -328,11 +385,10 @@ export default function CitizenApp() {
                 </div>
               )}
 
-              {/* View Full Report button if completed */}
               {selectedComplaint.status === 'completed' && (
                 <Button onClick={() => { setReportComplaintId(selectedComplaint.id); setView('full-report'); }}
                   className="w-full gap-2 bg-primary text-primary-foreground">
-                  <FileText className="w-4 h-4" /> View Full Report
+                  <FileText className="w-4 h-4" /> View Full Resolution Report
                 </Button>
               )}
 
@@ -424,6 +480,16 @@ export default function CitizenApp() {
                       <div className="text-xs text-muted-foreground mb-1">Resolution Time</div>
                       <p className="text-sm font-mono">{report.resolutionTime} hours</p>
                     </div>
+                    {report.aiVerification && (
+                      <div className="bg-muted/30 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ShieldCheck className="w-4 h-4 text-primary" />
+                          <span className="text-xs font-medium text-primary">AI Verification</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{report.aiVerification.verdict}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{report.aiVerification.afterAnalysis}</p>
+                      </div>
+                    )}
                     <div>
                       <div className="text-xs text-muted-foreground mb-1">Admin Review Notes</div>
                       <p className="text-sm text-success">{report.adminNotes}</p>
@@ -441,7 +507,7 @@ export default function CitizenApp() {
                 <div className="glass-card p-6 text-center">
                   <Clock className="w-8 h-8 mx-auto mb-2 text-warning" />
                   <p className="text-sm font-medium">Report Not Yet Available</p>
-                  <p className="text-xs text-muted-foreground mt-1">The admin has not yet reviewed and approved this complaint. You'll be notified when the full report is ready.</p>
+                  <p className="text-xs text-muted-foreground mt-1">The admin has not yet reviewed and approved this complaint.</p>
                   <Button variant="outline" onClick={() => setView('home')} className="mt-4 border-border">Back to Home</Button>
                 </div>
               )}
@@ -460,11 +526,10 @@ export default function CitizenApp() {
                 <div className="text-xs text-muted-foreground">Your Complaint ID</div>
                 <div className="text-2xl font-mono font-bold text-primary">{newComplaintId}</div>
               </div>
-              <p className="text-sm text-muted-foreground">A worker will be auto-assigned shortly. Check notifications for updates!</p>
+              <p className="text-sm text-muted-foreground">AI has classified your issue. A worker will be auto-assigned shortly!</p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => setView('home')} className="border-border">Home</Button>
-                <Button onClick={() => setView('notifications')}
-                  className="bg-primary text-primary-foreground gap-1">
+                <Button onClick={() => setView('notifications')} className="bg-primary text-primary-foreground gap-1">
                   <Bell className="w-4 h-4" /> Notifications
                 </Button>
               </div>
