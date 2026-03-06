@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, Bell, ClipboardCheck, ThumbsUp, ThumbsDown, FileText } from 'lucide-react';
+import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
-import { CATEGORY_LABELS, getCategoryIcon, type ComplaintCategory, type Complaint } from '@/data/mockData';
-import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getNotifications, getAllReviews } from '@/data/store';
+import { CATEGORY_LABELS, getCategoryIcon, type Complaint } from '@/data/mockData';
+import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getAllReviews, askAICopilot } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
 import CityMap from '@/components/CityMap';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import jansetuLogo from '@/assets/jansetu-logo.png';
 
-type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review';
+type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review' | 'copilot';
 
 export default function GovernmentDashboard() {
   useStoreRefresh();
@@ -20,17 +22,16 @@ export default function GovernmentDashboard() {
   const departments = getDepartments();
   const workers = getWorkers();
   const reviewQueue = getReviewQueue();
-  const adminNotifications = getNotifications('admin');
-  const unreadCount = adminNotifications.filter(n => !n.read).length;
 
   const stats = useMemo(() => {
     const total = complaints.length;
     const resolved = complaints.filter(c => c.status === 'completed').length;
-    const pending = complaints.filter(c => c.status !== 'completed').length;
+    const pending = complaints.filter(c => !['completed'].includes(c.status)).length;
+    const underReview = complaints.filter(c => c.status === 'under_review').length;
     const avgResTime = complaints
       .filter(c => c.resolutionTime)
       .reduce((a, c) => a + (c.resolutionTime || 0), 0) / (resolved || 1);
-    return { total, resolved, pending, avgResTime: avgResTime.toFixed(1) };
+    return { total, resolved, pending, underReview, avgResTime: avgResTime.toFixed(1) };
   }, [complaints]);
 
   const categoryData = useMemo(() => {
@@ -43,8 +44,8 @@ export default function GovernmentDashboard() {
   }, [complaints]);
 
   const trendData = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.slice(0, 6).map(month => ({
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    return months.map(month => ({
       month,
       complaints: Math.floor(Math.random() * 80 + 40),
       resolved: Math.floor(Math.random() * 60 + 20),
@@ -59,37 +60,35 @@ export default function GovernmentDashboard() {
 
   const sentimentData = useMemo(() => {
     const rated = complaints.filter(c => c.sentiment);
-    const pos = rated.filter(c => c.sentiment === 'positive').length;
-    const neu = rated.filter(c => c.sentiment === 'neutral').length;
-    const neg = rated.filter(c => c.sentiment === 'negative').length;
     return [
-      { name: 'Positive', value: pos, color: 'hsl(150, 70%, 45%)' },
-      { name: 'Neutral', value: neu, color: 'hsl(215, 15%, 55%)' },
-      { name: 'Negative', value: neg, color: 'hsl(0, 72%, 55%)' },
+      { name: 'Positive', value: rated.filter(c => c.sentiment === 'positive').length, color: 'hsl(150, 70%, 45%)' },
+      { name: 'Neutral', value: rated.filter(c => c.sentiment === 'neutral').length, color: 'hsl(215, 15%, 55%)' },
+      { name: 'Negative', value: rated.filter(c => c.sentiment === 'negative').length, color: 'hsl(0, 72%, 55%)' },
     ];
   }, [complaints]);
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3; badge?: number }[] = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'review', label: 'Review', icon: ClipboardCheck, badge: reviewQueue.length },
+    { id: 'copilot', label: 'AI Copilot', icon: MessageSquare },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'map', label: 'City Map', icon: MapPin },
     { id: 'departments', label: 'Depts', icon: Building2 },
   ];
 
-  const CHART_COLORS = ['hsl(175, 80%, 50%)', 'hsl(260, 70%, 60%)', 'hsl(150, 70%, 45%)', 'hsl(38, 92%, 55%)', 'hsl(0, 72%, 55%)', 'hsl(200, 80%, 55%)'];
+  const CHART_COLORS = ['hsl(175, 80%, 50%)', 'hsl(260, 70%, 60%)', 'hsl(150, 70%, 45%)', 'hsl(38, 92%, 55%)', 'hsl(0, 72%, 55%)', 'hsl(200, 80%, 55%)', 'hsl(30, 80%, 50%)'];
 
   return (
     <div className="min-h-screen bg-background cyber-grid">
-      {/* Header */}
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center gap-3 px-4 py-3">
           <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-5 h-5" />
           </button>
+          <img src={jansetuLogo} alt="JanSetu AI" className="w-7 h-7 rounded" />
           <div className="flex-1">
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-primary">PS</span>-CRM Command Center
+              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Command Center</span>
             </h1>
             <div className="text-xs text-muted-foreground">Smart City Governance Platform</div>
           </div>
@@ -106,7 +105,6 @@ export default function GovernmentDashboard() {
             <span className="text-xs text-muted-foreground">LIVE</span>
           </div>
         </div>
-        {/* Tabs */}
         <div className="flex px-4 gap-1 pb-2 overflow-x-auto">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
@@ -126,26 +124,24 @@ export default function GovernmentDashboard() {
       <div className="p-4 max-w-7xl mx-auto">
         {tab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* Review alert */}
             {reviewQueue.length > 0 && (
               <motion.button initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                 onClick={() => setTab('review')}
                 className="w-full glass-card p-3 border-warning/40 flex items-center gap-3 hover:border-warning/60 transition-colors">
                 <ClipboardCheck className="w-5 h-5 text-warning" />
                 <div className="flex-1 text-left">
-                  <div className="text-sm font-semibold text-warning">{reviewQueue.length} complaint{reviewQueue.length > 1 ? 's' : ''} awaiting review</div>
-                  <div className="text-xs text-muted-foreground">Workers have completed repairs. Review and approve to send reports to citizens.</div>
+                  <div className="text-sm font-semibold text-warning">{reviewQueue.length} awaiting review</div>
+                  <div className="text-xs text-muted-foreground">AI-verified repairs need admin approval</div>
                 </div>
               </motion.button>
             )}
 
-            {/* Key Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: 'Total Complaints', value: stats.total, icon: AlertTriangle, color: 'text-primary' },
                 { label: 'Resolved', value: stats.resolved, icon: CheckCircle2, color: 'text-success' },
-                { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning' },
-                { label: 'Avg Resolution', value: `${stats.avgResTime}h`, icon: TrendingUp, color: 'text-accent' },
+                { label: 'Under Review', value: stats.underReview, icon: Eye, color: 'text-accent' },
+                { label: 'Avg Resolution', value: `${stats.avgResTime}h`, icon: TrendingUp, color: 'text-warning' },
               ].map((m, i) => (
                 <motion.div key={m.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                   className="glass-card p-4">
@@ -158,7 +154,6 @@ export default function GovernmentDashboard() {
               ))}
             </div>
 
-            {/* Charts Row */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="glass-card p-4">
                 <div className="section-title mb-4">Complaint Trends</div>
@@ -203,7 +198,6 @@ export default function GovernmentDashboard() {
               </div>
             </div>
 
-            {/* Sentiment + Workers */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="glass-card p-4">
                 <div className="section-title mb-4">Citizen Sentiment</div>
@@ -242,7 +236,6 @@ export default function GovernmentDashboard() {
               </div>
             </div>
 
-            {/* Recent Complaints */}
             <div className="glass-card p-4">
               <div className="section-title mb-3">Recent Complaints</div>
               <div className="overflow-x-auto">
@@ -263,8 +256,14 @@ export default function GovernmentDashboard() {
                         <td className="py-2">{getCategoryIcon(c.category)} {CATEGORY_LABELS[c.category]}</td>
                         <td className="py-2 text-muted-foreground hidden md:table-cell">{c.ward}</td>
                         <td className="py-2">
-                          <span className={`text-xs font-medium ${c.status === 'completed' ? 'text-success' : c.status === 'in_progress' ? 'text-primary' : c.status === 'assigned' ? 'text-warning' : 'text-muted-foreground'}`}>
-                            {c.status.replace('_', ' ')}
+                          <span className={`text-xs font-medium ${
+                            c.status === 'completed' ? 'text-success' :
+                            c.status === 'under_review' ? 'text-accent' :
+                            c.status === 'rework_required' ? 'text-destructive' :
+                            c.status === 'in_progress' ? 'text-primary' :
+                            c.status === 'assigned' ? 'text-warning' : 'text-muted-foreground'
+                          }`}>
+                            {c.status.replace(/_/g, ' ')}
                           </span>
                         </td>
                         <td className="py-2 hidden md:table-cell">
@@ -280,6 +279,8 @@ export default function GovernmentDashboard() {
         )}
 
         {tab === 'review' && <ReviewTab />}
+
+        {tab === 'copilot' && <CopilotTab />}
 
         {tab === 'analytics' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
@@ -309,7 +310,6 @@ export default function GovernmentDashboard() {
               </ResponsiveContainer>
             </div>
 
-            {/* Predictive Hotspots */}
             <div className="glass-card p-4 glow-border">
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-primary" />
@@ -335,7 +335,6 @@ export default function GovernmentDashboard() {
               </div>
             </div>
 
-            {/* Worker Productivity */}
             <div className="glass-card p-4">
               <div className="section-title mb-3">Worker Productivity</div>
               <div className="space-y-2">
@@ -388,14 +387,12 @@ export default function GovernmentDashboard() {
                       <div className="text-[10px] text-muted-foreground">Trust Score</div>
                     </div>
                   </div>
-
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all" style={{
                       width: `${dept.trustScore}%`,
                       background: dept.trustScore > 75 ? 'hsl(150, 70%, 45%)' : dept.trustScore > 50 ? 'hsl(38, 92%, 55%)' : 'hsl(0, 72%, 55%)'
                     }} />
                   </div>
-
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div>
                       <div className="text-sm font-mono font-bold">{dept.totalComplaints}</div>
@@ -410,7 +407,6 @@ export default function GovernmentDashboard() {
                       <div className="text-[10px] text-muted-foreground">Pending</div>
                     </div>
                   </div>
-
                   <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/30">
                     <span>Avg Resolution: <span className="font-mono text-foreground">{dept.avgResolutionTime}h</span></span>
                     <span className={dept.trustScore > 75 ? 'text-success' : 'text-warning'}>
@@ -437,7 +433,76 @@ function getPriorityColor(priority: string) {
   return colors[priority] || '';
 }
 
-// Review Tab Component
+// AI Governance Copilot
+function CopilotTab() {
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([
+    { role: 'ai', text: '🤖 Welcome to the **JanSetu AI Governance Copilot**. I can help you analyze complaints, department performance, worker productivity, and predict future hotspots.\n\nTry asking:\n• "Which ward has the most complaints?"\n• "Which department is slowest?"\n• "Show me today\'s summary"\n• "Predict future hotspots"' },
+  ]);
+  const [input, setInput] = useState('');
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    const userMsg = input.trim();
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setInput('');
+    // Simulate response delay
+    setTimeout(() => {
+      const response = askAICopilot(userMsg);
+      setMessages(prev => [...prev, { role: 'ai', text: response }]);
+    }, 500);
+  };
+
+  const quickQuestions = [
+    'Which ward has the most complaints?',
+    'Which department is slowest?',
+    'Show pending complaints summary',
+    'Who is the best worker?',
+    'Predict future hotspots',
+  ];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 max-w-3xl mx-auto">
+      <div className="flex items-center gap-2 mb-2">
+        <MessageSquare className="w-5 h-5 text-primary" />
+        <h2 className="text-lg font-bold">AI Governance Copilot</h2>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {quickQuestions.map(q => (
+          <button key={q} onClick={() => { setInput(q); }}
+            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-muted text-muted-foreground hover:bg-primary/15 hover:text-primary transition-colors">
+            {q}
+          </button>
+        ))}
+      </div>
+
+      <div className="glass-card p-4 min-h-[400px] max-h-[500px] overflow-y-auto space-y-4">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] rounded-xl px-4 py-3 text-sm
+              ${msg.role === 'user'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted/50 text-foreground'}`}>
+              <div className="whitespace-pre-wrap">{msg.text.replace(/\*\*(.*?)\*\*/g, '$1')}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2">
+        <Input value={input} onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          placeholder="Ask about complaints, departments, workers..."
+          className="bg-card border-border" />
+        <Button onClick={handleSend} className="bg-primary text-primary-foreground">
+          <Send className="w-4 h-4" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Review Tab
 function ReviewTab() {
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const reviewQueue = getReviewQueue();
@@ -463,7 +528,7 @@ function ReviewTab() {
         <h2 className="text-lg font-bold">Review & Approve Repairs</h2>
       </div>
       <p className="text-sm text-muted-foreground">
-        Workers have completed repairs and uploaded proof. Review each case and approve to send a full resolution report to the citizen.
+        AI has verified worker repairs. Review AI analysis, images, and approve or reject.
       </p>
 
       {reviewQueue.length === 0 ? (
@@ -491,11 +556,31 @@ function ReviewTab() {
 
                 <div className="text-sm text-muted-foreground">{complaint.description}</div>
 
+                {/* AI Verification Result */}
+                {item.aiVerification && (
+                  <div className={`rounded-lg p-3 space-y-2 ${item.aiVerification.issueStillDetected ? 'bg-destructive/10 border border-destructive/30' : 'bg-success/10 border border-success/30'}`}>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className={`w-4 h-4 ${item.aiVerification.issueStillDetected ? 'text-destructive' : 'text-success'}`} />
+                      <span className={`text-xs font-semibold ${item.aiVerification.issueStillDetected ? 'text-destructive' : 'text-success'}`}>
+                        AI Verification: {item.aiVerification.issueStillDetected ? '⚠️ Issue May Persist' : '✓ Repair Looks Successful'}
+                      </span>
+                      <span className="text-xs font-mono text-muted-foreground ml-auto">{(item.aiVerification.confidence * 100).toFixed(0)}% confidence</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{item.aiVerification.verdict}</p>
+                    <p className="text-xs text-muted-foreground">{item.aiVerification.afterAnalysis}</p>
+                  </div>
+                )}
+
                 <div className="bg-muted/30 rounded-lg p-3 space-y-2">
                   <div className="text-xs font-medium text-primary">Worker's Report</div>
                   <p className="text-sm">{item.workerNotes}</p>
-                  <div className="w-full h-24 bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
-                    📷 Worker repair photo
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="h-20 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">
+                      📷 Before (complaint)
+                    </div>
+                    <div className="h-20 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">
+                      📷 After (repair)
+                    </div>
                   </div>
                   <div className="text-[10px] text-muted-foreground">Completed: {new Date(item.completedAt).toLocaleString()}</div>
                 </div>
@@ -517,7 +602,7 @@ function ReviewTab() {
                   </Button>
                   <Button onClick={() => handleReject(item.complaintId)}
                     variant="outline" className="flex-1 gap-2 border-destructive/50 text-destructive hover:bg-destructive/10">
-                    <ThumbsDown className="w-4 h-4" /> Reject & Reassign
+                    <ThumbsDown className="w-4 h-4" /> Reject → Rework
                   </Button>
                 </div>
               </div>
@@ -526,7 +611,6 @@ function ReviewTab() {
         </div>
       )}
 
-      {/* Recently reviewed */}
       {allReviews.filter(r => r.reviewed).length > 0 && (
         <div>
           <div className="section-title mb-3 mt-6">Recently Reviewed</div>
@@ -541,7 +625,7 @@ function ReviewTab() {
                     <div className="text-xs text-muted-foreground">{r.adminNotes}</div>
                   </div>
                   <span className={`text-xs font-medium ${r.approved ? 'text-success' : 'text-destructive'}`}>
-                    {r.approved ? '✓ Approved' : '✗ Rejected'}
+                    {r.approved ? '✓ Approved' : '✗ Rework'}
                   </span>
                 </div>
               );

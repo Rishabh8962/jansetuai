@@ -1,7 +1,7 @@
-// Mock data generator for PS-CRM Smart City Platform
+// Mock data generator for JanSetu AI Smart City Platform
 
-export type ComplaintCategory = 'pothole' | 'garbage' | 'streetlight' | 'water_leakage' | 'drainage' | 'road_damage';
-export type ComplaintStatus = 'submitted' | 'assigned' | 'in_progress' | 'completed';
+export type ComplaintCategory = 'pothole' | 'garbage' | 'streetlight' | 'water_leakage' | 'drainage' | 'road_damage' | 'sewage_overflow';
+export type ComplaintStatus = 'submitted' | 'assigned' | 'in_progress' | 'under_review' | 'rework_required' | 'completed';
 export type UserRole = 'citizen' | 'worker' | 'admin';
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 export type Sentiment = 'positive' | 'neutral' | 'negative';
@@ -24,11 +24,16 @@ export interface Complaint {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
-  resolutionTime?: number; // hours
+  resolutionTime?: number;
   citizenRating?: number;
   sentiment?: Sentiment;
   aiConfidence?: number;
   aiDetectedCategory?: ComplaintCategory;
+  aiVerification?: {
+    issueStillDetected: boolean;
+    confidence: number;
+    verdict: string;
+  };
 }
 
 export interface Worker {
@@ -73,6 +78,7 @@ const categoryLabels: Record<ComplaintCategory, string> = {
   water_leakage: 'Water Leakage',
   drainage: 'Drainage Blockage',
   road_damage: 'Road Damage',
+  sewage_overflow: 'Sewage Overflow',
 };
 
 const categoryDepartments: Record<ComplaintCategory, string> = {
@@ -82,10 +88,11 @@ const categoryDepartments: Record<ComplaintCategory, string> = {
   water_leakage: 'Water Supply',
   drainage: 'Drainage',
   road_damage: 'Roads & Infrastructure',
+  sewage_overflow: 'Sanitation',
 };
 
-const categories: ComplaintCategory[] = ['pothole', 'garbage', 'streetlight', 'water_leakage', 'drainage', 'road_damage'];
-const statuses: ComplaintStatus[] = ['submitted', 'assigned', 'in_progress', 'completed'];
+const categories: ComplaintCategory[] = ['pothole', 'garbage', 'streetlight', 'water_leakage', 'drainage', 'road_damage', 'sewage_overflow'];
+const statuses: ComplaintStatus[] = ['submitted', 'assigned', 'in_progress', 'under_review', 'completed'];
 const priorities: Priority[] = ['low', 'medium', 'high', 'critical'];
 const sentiments: Sentiment[] = ['positive', 'neutral', 'negative'];
 const wards = ['Ward 1', 'Ward 2', 'Ward 3', 'Ward 4', 'Ward 5', 'Ward 6', 'Ward 7', 'Ward 8'];
@@ -100,9 +107,9 @@ const descriptions: Record<ComplaintCategory, string[]> = {
   water_leakage: ['Pipeline burst flooding the road', 'Water leaking from main supply line', 'Continuous water leak near junction', 'Underground pipe leaking for days'],
   drainage: ['Drain overflowing during rain', 'Blocked drain causing waterlogging', 'Open drain cover missing', 'Sewage overflow on residential street'],
   road_damage: ['Road surface damaged by heavy trucks', 'Cracks on newly built road', 'Road cave-in near intersection', 'Damaged road divider causing accidents'],
+  sewage_overflow: ['Sewage overflowing onto main road', 'Manhole cover broken with sewage leaking', 'Sewage water entering residential colony', 'Open sewage line near school'],
 };
 
-// Center around Bangalore, India
 const CENTER_LAT = 12.9716;
 const CENTER_LNG = 77.5946;
 
@@ -125,7 +132,6 @@ function generateDate(daysAgo: number): string {
   return d.toISOString();
 }
 
-// Generate 500 complaints
 export function generateComplaints(): Complaint[] {
   const complaints: Complaint[] = [];
   for (let i = 1; i <= 500; i++) {
@@ -224,6 +230,7 @@ export function getCategoryIcon(cat: ComplaintCategory): string {
     water_leakage: '💧',
     drainage: '🚰',
     road_damage: '🚧',
+    sewage_overflow: '🚽',
   };
   return icons[cat];
 }
@@ -233,6 +240,8 @@ export function getStatusColor(status: ComplaintStatus): string {
     submitted: 'text-muted-foreground',
     assigned: 'text-warning',
     in_progress: 'text-primary',
+    under_review: 'text-accent',
+    rework_required: 'text-destructive',
     completed: 'text-success',
   };
   return colors[status];
