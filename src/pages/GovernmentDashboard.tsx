@@ -134,7 +134,7 @@ export default function GovernmentDashboard() {
                 <ClipboardCheck className="w-5 h-5 text-warning" />
                 <div className="flex-1 text-left">
                   <div className="text-sm font-semibold text-warning">{reviewQueue.length} awaiting review</div>
-                  <div className="text-xs text-muted-foreground">AI-verified repairs need admin approval</div>
+                  <div className="text-xs text-muted-foreground">AI-verified repairs need official approval</div>
                 </div>
               </motion.button>
             )}
