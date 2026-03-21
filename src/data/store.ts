@@ -276,7 +276,7 @@ export function updateComplaintStatus(id: string, status: Complaint['status'], r
       });
 
       addNotification({
-        type: 'admin',
+        type: 'government_official',
         title: aiResult.issueStillDetected ? 'Review Required ⚠️ AI Flagged' : 'Review Required 📋',
         message: aiResult.issueStillDetected
           ? `Worker completed ${id} but AI detected issue may persist. ${aiResult.verdict}`
