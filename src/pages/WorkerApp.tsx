@@ -301,7 +301,7 @@ export default function WorkerApp() {
                     <ShieldCheck className="w-8 h-8 text-accent mx-auto mb-2" />
                     <div className="font-semibold text-accent">Under AI & Admin Review</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      AI has verified your repair. Awaiting admin approval.
+                      AI has verified your repair. Awaiting official approval.
                     </div>
                   </div>
                 )}
