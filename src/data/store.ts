@@ -287,7 +287,7 @@ export function updateComplaintStatus(id: string, status: Complaint['status'], r
       addNotification({
         type: 'citizen',
         title: 'Repair Completed - Under Review',
-        message: `The worker has completed the repair for ${id}. AI verification and admin review in progress. You'll receive a full report once approved.`,
+        message: `The worker has completed the repair for ${id}. AI verification and official review in progress. You'll receive a full report once approved.`,
         complaintId: id,
       });
     } else {
