@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw } from 'lucide-react';
+import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw, User } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import { CATEGORY_LABELS, getCategoryIcon, type Complaint } from '@/data/mockData';
 import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getAllReviews, askAICopilot } from '@/data/store';
