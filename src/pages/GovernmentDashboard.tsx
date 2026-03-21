@@ -589,7 +589,7 @@ function ReviewTab() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">Admin Notes (sent to citizen)</label>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Official Notes (sent to citizen)</label>
                   <Textarea
                     value={adminNotes[item.complaintId] || ''}
                     onChange={e => setAdminNotes(prev => ({ ...prev, [item.complaintId]: e.target.value }))}

@@ -310,7 +310,7 @@ export default function WorkerApp() {
                     <CheckCircle2 className="w-8 h-8 text-success mx-auto mb-2" />
                     <div className="font-semibold text-success">Task Completed & Approved</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Admin has approved your repair. Full report sent to citizen.
+                      Official has approved your repair. Full report sent to citizen.
                     </div>
                   </div>
                 )}
