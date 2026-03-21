@@ -22,7 +22,7 @@ let projects: Project[] | null = null;
 // Notifications
 export interface Notification {
   id: string;
-  type: 'citizen' | 'worker' | 'admin';
+  type: 'citizen' | 'worker' | 'government_official';
   title: string;
   message: string;
   complaintId: string;
