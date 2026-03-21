@@ -115,14 +115,19 @@ export default function CitizenApp() {
               <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span>
             </h1>
           </div>
-          <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
+              <User className="w-5 h-5" />
+            </button>
+            <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
