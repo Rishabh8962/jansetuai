@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MapPin, Camera, CheckCircle2, Clock, Navigation, AlertTriangle, ChevronRight, Phone, Bell, ShieldCheck, RotateCcw } from 'lucide-react';
+import { ArrowLeft, MapPin, Camera, CheckCircle2, Clock, Navigation, AlertTriangle, ChevronRight, Phone, Bell, ShieldCheck, RotateCcw, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CATEGORY_LABELS, getCategoryIcon, getPriorityColor, type Complaint } from '@/data/mockData';
 import { getComplaints, updateComplaintStatus, getNotifications, markNotificationRead } from '@/data/store';
