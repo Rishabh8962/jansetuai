@@ -148,7 +148,7 @@ export function rejectReview(complaintId: string, adminNotes: string) {
     addNotification({
       type: 'worker',
       title: 'Rework Required ⚠️',
-      message: `Admin rejected repair for ${complaintId}. Reason: ${adminNotes}. Please revisit and fix the issue.`,
+      message: `Government Official rejected repair for ${complaintId}. Reason: ${adminNotes}. Please revisit and fix the issue.`,
       complaintId,
     });
     addNotification({
