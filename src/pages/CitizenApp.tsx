@@ -496,7 +496,7 @@ export default function CitizenApp() {
                       </div>
                     )}
                     <div>
-                      <div className="text-xs text-muted-foreground mb-1">Admin Review Notes</div>
+                      <div className="text-xs text-muted-foreground mb-1">Official Review Notes</div>
                       <p className="text-sm text-success">{report.adminNotes}</p>
                     </div>
                     <div>
