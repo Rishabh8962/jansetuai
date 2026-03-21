@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw } from 'lucide-react';
+import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw, User } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import { CATEGORY_LABELS, getCategoryIcon, type Complaint } from '@/data/mockData';
 import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getAllReviews, askAICopilot } from '@/data/store';
@@ -88,11 +88,14 @@ export default function GovernmentDashboard() {
           <img src={jansetuLogo} alt="JanSetu AI" className="w-7 h-7 rounded" />
           <div className="flex-1">
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Command Center</span>
+              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Government Official</span>
             </h1>
             <div className="text-xs text-muted-foreground">Smart City Governance Platform</div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
+              <User className="w-5 h-5" />
+            </button>
             {reviewQueue.length > 0 && (
               <button onClick={() => setTab('review')} className="relative">
                 <ClipboardCheck className="w-5 h-5 text-warning" />
@@ -131,7 +134,7 @@ export default function GovernmentDashboard() {
                 <ClipboardCheck className="w-5 h-5 text-warning" />
                 <div className="flex-1 text-left">
                   <div className="text-sm font-semibold text-warning">{reviewQueue.length} awaiting review</div>
-                  <div className="text-xs text-muted-foreground">AI-verified repairs need admin approval</div>
+                  <div className="text-xs text-muted-foreground">AI-verified repairs need official approval</div>
                 </div>
               </motion.button>
             )}
@@ -586,7 +589,7 @@ function ReviewTab() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground block mb-1">Admin Notes (sent to citizen)</label>
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">Official Notes (sent to citizen)</label>
                   <Textarea
                     value={adminNotes[item.complaintId] || ''}
                     onChange={e => setAdminNotes(prev => ({ ...prev, [item.complaintId]: e.target.value }))}

@@ -22,7 +22,7 @@ let projects: Project[] | null = null;
 // Notifications
 export interface Notification {
   id: string;
-  type: 'citizen' | 'worker' | 'admin';
+  type: 'citizen' | 'worker' | 'government_official';
   title: string;
   message: string;
   complaintId: string;
@@ -148,7 +148,7 @@ export function rejectReview(complaintId: string, adminNotes: string) {
     addNotification({
       type: 'worker',
       title: 'Rework Required ⚠️',
-      message: `Admin rejected repair for ${complaintId}. Reason: ${adminNotes}. Please revisit and fix the issue.`,
+      message: `Government Official rejected repair for ${complaintId}. Reason: ${adminNotes}. Please revisit and fix the issue.`,
       complaintId,
     });
     addNotification({
@@ -276,7 +276,7 @@ export function updateComplaintStatus(id: string, status: Complaint['status'], r
       });
 
       addNotification({
-        type: 'admin',
+        type: 'government_official',
         title: aiResult.issueStillDetected ? 'Review Required ⚠️ AI Flagged' : 'Review Required 📋',
         message: aiResult.issueStillDetected
           ? `Worker completed ${id} but AI detected issue may persist. ${aiResult.verdict}`
@@ -287,7 +287,7 @@ export function updateComplaintStatus(id: string, status: Complaint['status'], r
       addNotification({
         type: 'citizen',
         title: 'Repair Completed - Under Review',
-        message: `The worker has completed the repair for ${id}. AI verification and admin review in progress. You'll receive a full report once approved.`,
+        message: `The worker has completed the repair for ${id}. AI verification and official review in progress. You'll receive a full report once approved.`,
         complaintId: id,
       });
     } else {

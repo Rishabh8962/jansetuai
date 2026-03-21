@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import CitizenApp from "./pages/CitizenApp";
 import WorkerApp from "./pages/WorkerApp";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
+import LoginPage from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,6 +21,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/citizen" element={<CitizenApp />} />
           <Route path="/worker" element={<WorkerApp />} />
           <Route path="/dashboard" element={<GovernmentDashboard />} />

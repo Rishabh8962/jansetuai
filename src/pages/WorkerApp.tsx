@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MapPin, Camera, CheckCircle2, Clock, Navigation, AlertTriangle, ChevronRight, Phone, Bell, ShieldCheck, RotateCcw } from 'lucide-react';
+import { ArrowLeft, MapPin, Camera, CheckCircle2, Clock, Navigation, AlertTriangle, ChevronRight, Phone, Bell, ShieldCheck, RotateCcw, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CATEGORY_LABELS, getCategoryIcon, getPriorityColor, type Complaint } from '@/data/mockData';
 import { getComplaints, updateComplaintStatus, getNotifications, markNotificationRead } from '@/data/store';
@@ -74,14 +74,19 @@ export default function WorkerApp() {
               <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Worker</span>
             </h1>
           </div>
-          <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
+              <User className="w-5 h-5" />
+            </button>
+            <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -183,7 +188,7 @@ export default function WorkerApp() {
                   <RotateCcw className="w-5 h-5 text-destructive" />
                   <div>
                     <div className="text-sm font-semibold text-destructive">Rework Required</div>
-                    <div className="text-xs text-muted-foreground">Admin rejected the previous repair. Please revisit and fix.</div>
+                    <div className="text-xs text-muted-foreground">Official rejected the previous repair. Please revisit and fix.</div>
                   </div>
                 </div>
               )}
@@ -296,7 +301,7 @@ export default function WorkerApp() {
                     <ShieldCheck className="w-8 h-8 text-accent mx-auto mb-2" />
                     <div className="font-semibold text-accent">Under AI & Admin Review</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      AI has verified your repair. Awaiting admin approval.
+                      AI has verified your repair. Awaiting official approval.
                     </div>
                   </div>
                 )}
@@ -305,7 +310,7 @@ export default function WorkerApp() {
                     <CheckCircle2 className="w-8 h-8 text-success mx-auto mb-2" />
                     <div className="font-semibold text-success">Task Completed & Approved</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Admin has approved your repair. Full report sent to citizen.
+                      Official has approved your repair. Full report sent to citizen.
                     </div>
                   </div>
                 )}
