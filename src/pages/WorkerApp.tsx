@@ -188,7 +188,7 @@ export default function WorkerApp() {
                   <RotateCcw className="w-5 h-5 text-destructive" />
                   <div>
                     <div className="text-sm font-semibold text-destructive">Rework Required</div>
-                    <div className="text-xs text-muted-foreground">Admin rejected the previous repair. Please revisit and fix.</div>
+                    <div className="text-xs text-muted-foreground">Official rejected the previous repair. Please revisit and fix.</div>
                   </div>
                 </div>
               )}
