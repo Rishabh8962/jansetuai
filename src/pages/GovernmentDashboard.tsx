@@ -88,11 +88,14 @@ export default function GovernmentDashboard() {
           <img src={jansetuLogo} alt="JanSetu AI" className="w-7 h-7 rounded" />
           <div className="flex-1">
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Command Center</span>
+              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Government Official</span>
             </h1>
             <div className="text-xs text-muted-foreground">Smart City Governance Platform</div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
+              <User className="w-5 h-5" />
+            </button>
             {reviewQueue.length > 0 && (
               <button onClick={() => setTab('review')} className="relative">
                 <ClipboardCheck className="w-5 h-5 text-warning" />
