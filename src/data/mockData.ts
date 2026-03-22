@@ -2,7 +2,7 @@
 
 export type ComplaintCategory = 'pothole' | 'garbage' | 'streetlight' | 'water_leakage' | 'drainage' | 'road_damage' | 'sewage_overflow';
 export type ComplaintStatus = 'submitted' | 'assigned' | 'in_progress' | 'under_review' | 'rework_required' | 'completed';
-export type UserRole = 'citizen' | 'worker' | 'government_official';
+export type UserRole = 'citizen' | 'worker' | 'admin';
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 export type Sentiment = 'positive' | 'neutral' | 'negative';
 
