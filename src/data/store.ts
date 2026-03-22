@@ -143,7 +143,6 @@ export function getCitizenReport(complaintId: string): CitizenReport | null {
 function ensureSeeded() {
   if (seeded) return;
   seeded = true;
-  const { generateComplaints, generateWorkers, generateDepartments, generateProjects } = require('./mockData');
   complaints = generateComplaints();
   workers = generateWorkers();
   departments = generateDepartments();
