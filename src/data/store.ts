@@ -1,4 +1,4 @@
-import { type Complaint, type Worker, type Department, type Project } from './mockData';
+import { type Complaint, type Worker, type Department, type Project, generateComplaints, generateWorkers, generateDepartments, generateProjects } from './mockData';
 
 // Event system
 type Listener = () => void;
