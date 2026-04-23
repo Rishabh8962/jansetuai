@@ -230,48 +230,71 @@ export default function CitizenApp() {
             <motion.div key="report" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-5">
               <h2 className="text-xl font-bold">Report an Issue</h2>
               <div className="space-y-4">
-                {/* Image Upload - Primary action */}
-                <div>
-                  <label className="section-title mb-2 block">Upload Photo (AI will detect issue)</label>
-                  {!imageUploaded ? (
-                    <Button onClick={handleImageUpload} variant="outline" className="w-full h-32 border-dashed border-2 border-border flex flex-col gap-2">
-                      <Camera className="w-8 h-8 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Tap to upload photo or take picture</span>
-                      <span className="text-xs text-primary">AI will auto-detect the issue type</span>
-                    </Button>
-                  ) : (
-                    <div className="glass-card p-3 border-success/30 flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-success" />
-                      <div>
-                        <span className="text-sm font-medium text-success">Photo uploaded ✓</span>
-                        <div className="text-xs text-muted-foreground">AI analyzing image...</div>
+                {/* Smart Image Upload (device or camera) */}
+                <SmartImageUpload
+                  label="Upload Photo (AI will detect issue)"
+                  helperText="Drop a photo, browse files, or capture from camera"
+                  onUploaded={handleImageUploaded}
+                  onClear={handleImageCleared}
+                  initialUrl={imageUrl ?? undefined}
+                />
+
+                {/* AI Analysis state */}
+                {aiAnalyzing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-card p-3 border-primary/30 flex items-center gap-3"
+                  >
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <div>
+                      <div className="text-sm font-medium text-primary flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" /> AI is analyzing your photo…
                       </div>
+                      <div className="text-xs text-muted-foreground">Detecting issue category and severity</div>
                     </div>
-                  )}
-                </div>
+                  </motion.div>
+                )}
 
                 {/* AI Detection Result */}
-                {imageUploaded && selectedCategory && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                    className="glass-card p-3 border-primary/30">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Eye className="w-4 h-4 text-primary" />
-                      <div className="text-xs text-muted-foreground">AI Image Detection Result</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-primary">
-                        {getCategoryIcon(selectedCategory)} {CATEGORY_LABELS[selectedCategory]} detected
+                {aiResult && !aiAnalyzing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-card p-4 border-primary/40 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                        <Eye className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground">AI Vision Result</div>
+                        <div className="text-sm font-semibold text-foreground">
+                          {getCategoryIcon(aiResult.category)} {CATEGORY_LABELS[aiResult.category] || aiResult.category}
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-success/15 text-success">
+                        {(aiResult.confidence * 100).toFixed(0)}%
                       </span>
-                      <span className="text-xs font-mono text-success">92% confidence</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Auto-assigned → {CATEGORY_DEPARTMENTS[selectedCategory]}
+                    <p className="text-sm text-muted-foreground italic">"{aiResult.title}"</p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                        Dept: {aiResult.department}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full font-medium ${
+                        aiResult.severity === 'high' ? 'bg-destructive/15 text-destructive'
+                        : aiResult.severity === 'low' ? 'bg-success/15 text-success'
+                        : 'bg-warning/15 text-warning'
+                      }`}>
+                        Severity: {aiResult.severity}
+                      </span>
                     </div>
                   </motion.div>
                 )}
 
                 <div>
-                  <label className="section-title mb-2 block">Issue Category {imageUploaded && '(auto-detected)'}</label>
+                  <label className="section-title mb-2 block">Issue Category {aiResult && '(auto-detected — editable)'}</label>
                   <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as ComplaintCategory)}>
                     <SelectTrigger className="bg-card border-border">
                       <SelectValue placeholder="Select category" />
@@ -286,7 +309,7 @@ export default function CitizenApp() {
                   </Select>
                 </div>
                 <div>
-                  <label className="section-title mb-2 block">Description (optional)</label>
+                  <label className="section-title mb-2 block">Description {aiResult && '(AI-generated — editable)'}</label>
                   <Textarea value={description} onChange={e => setDescription(e.target.value)}
                     placeholder="Describe the issue..." className="bg-card border-border min-h-[80px]" />
                 </div>
@@ -305,7 +328,7 @@ export default function CitizenApp() {
                   <div className="status-dot-active ml-auto" />
                 </div>
 
-                <Button onClick={handleSubmit} disabled={!selectedCategory && !imageUploaded}
+                <Button onClick={handleSubmit} disabled={(!selectedCategory && !imageUrl) || aiAnalyzing}
                   className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
                   <Send className="w-4 h-4" /> Submit Complaint
                 </Button>
