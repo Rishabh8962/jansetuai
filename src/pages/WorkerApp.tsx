@@ -1,14 +1,25 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, MapPin, Camera, CheckCircle2, Clock, Navigation, AlertTriangle, ChevronRight, Phone, Bell, ShieldCheck, RotateCcw } from 'lucide-react';
+import { ArrowLeft, MapPin, CheckCircle2, Navigation, AlertTriangle, ChevronRight, Phone, Bell, ShieldCheck, RotateCcw, Sparkles, Loader2, XCircle, AlertOctagon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CATEGORY_LABELS, getCategoryIcon, getPriorityColor, type Complaint } from '@/data/mockData';
 import { getComplaints, updateComplaintStatus, getNotifications, markNotificationRead } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
+import { SmartImageUpload } from '@/components/SmartImageUpload';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import jansetuLogo from '@/assets/jansetu-logo.png';
 
 type View = 'tasks' | 'detail' | 'notifications';
+
+interface AIVerification {
+  status: 'resolved' | 'partially_resolved' | 'not_fixed';
+  confidence: number;
+  reasoning: string;
+  quality_score: number;
+  recommendation: 'approve' | 'review' | 'rework';
+}
 
 export default function WorkerApp() {
   useStoreRefresh();
@@ -16,7 +27,9 @@ export default function WorkerApp() {
   const [view, setView] = useState<View>('tasks');
   const [selectedTask, setSelectedTask] = useState<Complaint | null>(null);
   const [filter, setFilter] = useState<'all' | 'assigned' | 'in_progress' | 'rework_required' | 'under_review'>('all');
-  const [uploadedPhoto, setUploadedPhoto] = useState(false);
+  const [afterImageUrl, setAfterImageUrl] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [aiResult, setAiResult] = useState<AIVerification | null>(null);
 
   const complaints = getComplaints();
   const workerNotifications = getNotifications('worker');
@@ -36,12 +49,16 @@ export default function WorkerApp() {
     underReview: workerTasks.filter(t => t.status === 'under_review').length,
   };
 
-  const handleStatusUpdate = (id: string, status: Complaint['status']) => {
-    if (status === 'completed' && !uploadedPhoto) return;
-    updateComplaintStatus(id, status, '/placeholder.svg');
-    const updated = getComplaints().find(c => c.id === id);
-    if (updated) setSelectedTask({ ...updated });
-    setUploadedPhoto(false);
+  const resetTaskState = () => {
+    setAfterImageUrl(null);
+    setAiResult(null);
+    setVerifying(false);
+  };
+
+  const openTask = (task: Complaint) => {
+    setSelectedTask(task);
+    resetTaskState();
+    setView('detail');
   };
 
   const handleStartWork = (id: string) => {
@@ -50,9 +67,52 @@ export default function WorkerApp() {
     if (updated) setSelectedTask({ ...updated });
   };
 
+  const runAIVerification = async () => {
+    if (!selectedTask || !afterImageUrl) return;
+    setVerifying(true);
+    setAiResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-repair', {
+        body: {
+          beforeImageUrl: selectedTask.imageUrl,
+          afterImageUrl,
+          category: selectedTask.category,
+          description: selectedTask.description,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      setAiResult(data as AIVerification);
+      toast.success('AI verification complete');
+    } catch (e) {
+      console.error(e);
+      toast.error('AI verification failed');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const submitForReview = () => {
+    if (!selectedTask || !afterImageUrl || !aiResult) return;
+    updateComplaintStatus(selectedTask.id, 'completed', afterImageUrl);
+    const updated = getComplaints().find(c => c.id === selectedTask.id);
+    if (updated) setSelectedTask({ ...updated });
+    toast.success('Submitted for command center approval');
+    resetTaskState();
+  };
+
   const statusLabels: Record<string, string> = {
     submitted: 'New', assigned: 'Assigned', in_progress: 'In Progress',
     under_review: 'Under Review', rework_required: 'Rework', completed: 'Completed',
+  };
+
+  const aiStatusMeta = (s: AIVerification['status']) => {
+    if (s === 'resolved') return { label: 'Resolved', icon: CheckCircle2, color: 'text-success', bg: 'border-success/40 bg-success/5' };
+    if (s === 'partially_resolved') return { label: 'Partially Resolved', icon: AlertOctagon, color: 'text-warning', bg: 'border-warning/40 bg-warning/5' };
+    return { label: 'Not Fixed', icon: XCircle, color: 'text-destructive', bg: 'border-destructive/40 bg-destructive/5' };
   };
 
   return (
@@ -60,7 +120,7 @@ export default function WorkerApp() {
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view === 'detail' ? (
-            <button onClick={() => setView('tasks')} className="text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setView('tasks'); resetTaskState(); }} className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-5 h-5" />
             </button>
           ) : (
@@ -71,7 +131,7 @@ export default function WorkerApp() {
           <div className="flex items-center gap-2">
             <img src={jansetuLogo} alt="JanSetu AI" className="w-6 h-6 rounded" />
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Worker</span>
+              <span className="text-foreground">JanSetu</span> <span className="gradient-text">AI</span> <span className="text-muted-foreground">Worker</span>
             </h1>
           </div>
           <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
@@ -97,7 +157,6 @@ export default function WorkerApp() {
                 </div>
               </div>
 
-              {/* Rework alert */}
               {stats.rework > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="glass-card p-3 border-destructive/30 flex items-center gap-3">
@@ -147,8 +206,8 @@ export default function WorkerApp() {
 
               <div className="space-y-2">
                 {filteredTasks.map(task => (
-                  <button key={task.id} onClick={() => { setSelectedTask(task); setUploadedPhoto(false); setView('detail'); }}
-                    className={`glass-card p-3 w-full text-left flex items-center gap-3 hover:border-primary/30 transition-colors
+                  <button key={task.id} onClick={() => openTask(task)}
+                    className={`glass-card glass-card-hover p-3 w-full text-left flex items-center gap-3
                       ${task.status === 'rework_required' ? 'border-destructive/30' : ''}`}>
                     <span className="text-xl">{getCategoryIcon(task.category)}</span>
                     <div className="flex-1 min-w-0">
@@ -183,7 +242,7 @@ export default function WorkerApp() {
                   <RotateCcw className="w-5 h-5 text-destructive" />
                   <div>
                     <div className="text-sm font-semibold text-destructive">Rework Required</div>
-                    <div className="text-xs text-muted-foreground">Admin rejected the previous repair. Please revisit and fix.</div>
+                    <div className="text-xs text-muted-foreground">Command center rejected the previous repair. Please revisit and fix.</div>
                   </div>
                 </div>
               )}
@@ -197,9 +256,14 @@ export default function WorkerApp() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">{selectedTask.description}</p>
-                {/* Show original complaint image */}
-                <div className="w-full h-24 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
-                  📷 Original complaint image
+                <div className="rounded-xl overflow-hidden aspect-video bg-muted">
+                  {selectedTask.imageUrl && selectedTask.imageUrl !== '/placeholder.svg' ? (
+                    <img src={selectedTask.imageUrl} alt="Original complaint" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                      📷 Original complaint image
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -230,34 +294,8 @@ export default function WorkerApp() {
                 </div>
               </div>
 
-              {/* Task Workflow */}
-              <div className="glass-card p-4">
-                <div className="section-title mb-3">Task Workflow</div>
-                <div className="flex items-center gap-2 text-xs">
-                  {['Assigned', 'Navigate', 'Fix', 'Upload Proof', 'AI Verify'].map((step, i) => {
-                    const stepIndex = selectedTask.status === 'assigned' ? 0
-                      : selectedTask.status === 'rework_required' ? 1
-                      : selectedTask.status === 'in_progress' ? (uploadedPhoto ? 3 : 2)
-                      : selectedTask.status === 'under_review' ? 4
-                      : selectedTask.status === 'completed' ? 4 : 0;
-                    return (
-                      <div key={step} className="flex items-center gap-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold
-                          ${i <= stepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                          {i <= stepIndex ? '✓' : i + 1}
-                        </div>
-                        {i < 4 && <div className={`w-4 h-0.5 ${i < stepIndex ? 'bg-primary' : 'bg-muted'}`} />}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex justify-between text-[9px] text-muted-foreground mt-1">
-                  <span>Assign</span><span>Nav</span><span>Fix</span><span>Proof</span><span>AI</span>
-                </div>
-              </div>
-
               {/* Actions */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {(selectedTask.status === 'assigned' || selectedTask.status === 'rework_required') && (
                   <Button onClick={() => handleStartWork(selectedTask.id)}
                     className="w-full gap-2 bg-primary text-primary-foreground">
@@ -268,35 +306,100 @@ export default function WorkerApp() {
                     )}
                   </Button>
                 )}
+
                 {selectedTask.status === 'in_progress' && (
                   <>
-                    {!uploadedPhoto ? (
-                      <Button onClick={() => setUploadedPhoto(true)}
-                        variant="outline" className="w-full gap-2 border-border">
-                        <Camera className="w-4 h-4" /> Upload Completion Photo
-                      </Button>
-                    ) : (
-                      <div className="glass-card p-3 border-success/30 flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-success" />
-                        <span className="text-sm text-success font-medium">Completion photo uploaded ✓</span>
-                      </div>
+                    <SmartImageUpload
+                      label="Upload Repair Proof (After)"
+                      helperText="Capture or upload the completed repair"
+                      onUploaded={(url) => { setAfterImageUrl(url); setAiResult(null); }}
+                      onClear={() => { setAfterImageUrl(null); setAiResult(null); }}
+                    />
+
+                    {/* Before/After comparison */}
+                    {afterImageUrl && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-3 space-y-3">
+                        <div className="section-title">Before vs After</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Before</div>
+                            <div className="rounded-lg overflow-hidden aspect-square bg-muted">
+                              {selectedTask.imageUrl && selectedTask.imageUrl !== '/placeholder.svg' ? (
+                                <img src={selectedTask.imageUrl} className="w-full h-full object-cover" alt="before" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">N/A</div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-[10px] text-success uppercase tracking-wide">After</div>
+                            <div className="rounded-lg overflow-hidden aspect-square bg-muted">
+                              <img src={afterImageUrl} className="w-full h-full object-cover" alt="after" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {!aiResult && (
+                          <Button onClick={runAIVerification} disabled={verifying}
+                            className="w-full gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                            {verifying ? (
+                              <><Loader2 className="w-4 h-4 animate-spin" /> AI is comparing images…</>
+                            ) : (
+                              <><Sparkles className="w-4 h-4" /> Run AI Verification</>
+                            )}
+                          </Button>
+                        )}
+                      </motion.div>
                     )}
-                    <Button onClick={() => handleStatusUpdate(selectedTask.id, 'completed')}
-                      disabled={!uploadedPhoto}
-                      className={`w-full gap-2 ${uploadedPhoto ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}>
-                      <ShieldCheck className="w-4 h-4" /> {uploadedPhoto ? 'Submit for AI Verification & Review' : 'Upload photo first'}
-                    </Button>
-                    {uploadedPhoto && (
-                      <p className="text-xs text-muted-foreground text-center">AI will compare before/after images and send to admin for approval</p>
-                    )}
+
+                    {/* AI verification result */}
+                    {aiResult && (() => {
+                      const meta = aiStatusMeta(aiResult.status);
+                      const Icon = meta.icon;
+                      return (
+                        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+                          className={`glass-card p-4 space-y-3 ${meta.bg}`}>
+                          <div className="flex items-center gap-2">
+                            <Icon className={`w-5 h-5 ${meta.color}`} />
+                            <div className="flex-1">
+                              <div className={`font-semibold ${meta.color}`}>AI Verdict: {meta.label}</div>
+                              <div className="text-[10px] text-muted-foreground">
+                                Confidence {(aiResult.confidence * 100).toFixed(0)}% · Quality {aiResult.quality_score}/100
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{aiResult.reasoning}</p>
+                          <div className="text-[10px] text-muted-foreground">
+                            Recommendation: <span className="font-semibold uppercase">{aiResult.recommendation}</span>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Button variant="outline" className="flex-1 gap-1" onClick={runAIVerification} disabled={verifying}>
+                              <Sparkles className="w-3 h-3" /> Re-verify
+                            </Button>
+                            <Button onClick={submitForReview}
+                              disabled={aiResult.status === 'not_fixed'}
+                              className="flex-1 gap-1 bg-success text-success-foreground hover:bg-success/90 disabled:bg-muted disabled:text-muted-foreground">
+                              <ShieldCheck className="w-3 h-3" /> Submit
+                            </Button>
+                          </div>
+                          {aiResult.status === 'not_fixed' && (
+                            <p className="text-[10px] text-destructive text-center">
+                              AI says the issue is not fixed. Please redo the repair and re-upload.
+                            </p>
+                          )}
+                        </motion.div>
+                      );
+                    })()}
                   </>
                 )}
+
                 {selectedTask.status === 'under_review' && (
                   <div className="glass-card p-4 text-center border-accent/30">
                     <ShieldCheck className="w-8 h-8 text-accent mx-auto mb-2" />
-                    <div className="font-semibold text-accent">Under AI & Admin Review</div>
+                    <div className="font-semibold text-accent">Under Command Center Review</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      AI has verified your repair. Awaiting admin approval.
+                      AI verification passed. Awaiting government approval.
                     </div>
                   </div>
                 )}
@@ -305,7 +408,7 @@ export default function WorkerApp() {
                     <CheckCircle2 className="w-8 h-8 text-success mx-auto mb-2" />
                     <div className="font-semibold text-success">Task Completed & Approved</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Admin has approved your repair. Full report sent to citizen.
+                      Command center has approved your repair. Full report sent to citizen.
                     </div>
                   </div>
                 )}
@@ -327,7 +430,7 @@ export default function WorkerApp() {
                     <button key={n.id} onClick={() => {
                       markNotificationRead(n.id);
                       const c = complaints.find(x => x.id === n.complaintId);
-                      if (c) { setSelectedTask(c); setUploadedPhoto(false); setView('detail'); }
+                      if (c) openTask(c);
                     }}
                       className={`glass-card p-3 w-full text-left space-y-1 transition-colors ${!n.read ? 'border-primary/40' : 'opacity-70'}`}>
                       <div className="flex items-center justify-between">
