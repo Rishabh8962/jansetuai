@@ -27,7 +27,16 @@ export default function CitizenApp() {
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [reportComplaintId, setReportComplaintId] = useState('');
-  const [imageUploaded, setImageUploaded] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiResult, setAiResult] = useState<{
+    category: ComplaintCategory;
+    confidence: number;
+    severity: 'low' | 'medium' | 'high';
+    title: string;
+    description: string;
+    department: string;
+  } | null>(null);
   const complaints = getComplaints();
   const citizenNotifications = getNotifications('citizen');
   const unreadCount = citizenNotifications.filter(n => !n.read).length;
@@ -35,25 +44,27 @@ export default function CitizenApp() {
   const myComplaints = complaints.slice(0, 15);
 
   const handleSubmit = useCallback(() => {
-    if (!selectedCategory && !imageUploaded) return;
+    if (!selectedCategory && !imageUrl) return;
     const id = `CMP-${String(complaints.length + 1).padStart(5, '0')}`;
-    const category = selectedCategory || 'pothole';
+    const category = (selectedCategory || aiResult?.category || 'pothole') as ComplaintCategory;
+    const priority = aiResult?.severity === 'high' ? 'high'
+      : aiResult?.severity === 'low' ? 'low' : 'medium';
     const newComplaint: Complaint = {
       id,
       userId: 'USR-SELF',
       citizenName: 'You',
       category,
-      description: description || `${CATEGORY_LABELS[category]} reported via image upload`,
-      imageUrl: '/placeholder.svg',
+      description: description || aiResult?.description || `${CATEGORY_LABELS[category]} reported via image upload`,
+      imageUrl: imageUrl || '/placeholder.svg',
       lat: 12.9716 + (Math.random() - 0.5) * 0.1,
       lng: 77.5946 + (Math.random() - 0.5) * 0.1,
       ward: 'Ward 3',
       status: 'submitted',
-      priority: 'medium',
+      priority,
       department: CATEGORY_DEPARTMENTS[category],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      aiConfidence: 0.92,
+      aiConfidence: aiResult?.confidence ?? 0.92,
       aiDetectedCategory: category,
     };
     addComplaint(newComplaint);
@@ -61,17 +72,43 @@ export default function CitizenApp() {
     setView('success');
     setSelectedCategory('');
     setDescription('');
-    setImageUploaded(false);
-  }, [selectedCategory, description, complaints.length, imageUploaded]);
+    setImageUrl(null);
+    setAiResult(null);
+  }, [selectedCategory, description, complaints.length, imageUrl, aiResult]);
 
-  const handleImageUpload = () => {
-    setImageUploaded(true);
-    // Simulate AI auto-detection from image
-    if (!selectedCategory) {
-      const detected: ComplaintCategory[] = ['pothole', 'garbage', 'drainage', 'streetlight', 'sewage_overflow'];
-      const randomDetect = detected[Math.floor(Math.random() * detected.length)];
-      setSelectedCategory(randomDetect);
+  const runAIDetection = async (url: string) => {
+    setAiAnalyzing(true);
+    setAiResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('detect-issue', {
+        body: { imageUrl: url },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAiResult(data);
+      // Auto-fill form
+      setSelectedCategory(data.category);
+      if (!description) setDescription(data.description);
+      toast.success(`AI detected: ${CATEGORY_LABELS[data.category as ComplaintCategory] || data.category}`);
+    } catch (e: any) {
+      console.error('AI detection failed:', e);
+      const msg = e?.message || 'AI detection failed';
+      if (msg.includes('Rate limit')) toast.error('AI rate limit reached. Please retry shortly.');
+      else if (msg.includes('credits')) toast.error('AI credits exhausted. Add funds in workspace settings.');
+      else toast.error('AI detection failed. You can still submit manually.');
+    } finally {
+      setAiAnalyzing(false);
     }
+  };
+
+  const handleImageUploaded = (url: string) => {
+    setImageUrl(url);
+    runAIDetection(url);
+  };
+
+  const handleImageCleared = () => {
+    setImageUrl(null);
+    setAiResult(null);
   };
 
   const handleTrack = () => {
