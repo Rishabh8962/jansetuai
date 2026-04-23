@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Camera, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye } from 'lucide-react';
+import { MapPin, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +10,9 @@ import { getComplaints, addComplaint, getNotifications, getCitizenReport, markNo
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
 import jansetuLogo from '@/assets/jansetu-logo.png';
+import { SmartImageUpload } from '@/components/SmartImageUpload';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
