@@ -380,6 +380,9 @@ export default function CitizenApp() {
                     </motion.div>
                   );
                 })()}
+
+                <div>
+                  <label className="section-title mb-2 block">Issue Category {aiResult && '(auto-detected — editable)'}</label>
                   <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as ComplaintCategory)}>
                     <SelectTrigger className="bg-card border-border">
                       <SelectValue placeholder="Select category" />
