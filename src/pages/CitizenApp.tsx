@@ -189,7 +189,19 @@ export default function CitizenApp() {
                   <div className="font-semibold text-sm">Track Status</div>
                   <div className="text-xs text-muted-foreground mt-1">Check your complaint</div>
                 </button>
+                <button onClick={() => navigate('/map')} className="glass-card p-5 text-left hover:border-accent/50 transition-colors group">
+                  <MapIcon className="w-6 h-6 text-accent mb-3 group-hover:scale-110 transition-transform" />
+                  <div className="font-semibold text-sm">City Map</div>
+                  <div className="text-xs text-muted-foreground mt-1">Heatmap & live markers</div>
+                </button>
+                <button onClick={() => setView('notifications')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
+                  <Bell className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
+                  <div className="font-semibold text-sm">Notifications</div>
+                  <div className="text-xs text-muted-foreground mt-1">{unreadCount > 0 ? `${unreadCount} new updates` : 'All caught up'}</div>
+                </button>
               </div>
+
+              <Leaderboard compact />
 
               {unreadCount > 0 && (
                 <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
