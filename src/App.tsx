@@ -9,25 +9,28 @@ import WorkerApp from "./pages/WorkerApp";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
+import { LanguageProvider } from "./i18n/LanguageContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/citizen" element={<CitizenApp />} />
-          <Route path="/worker" element={<WorkerApp />} />
-          <Route path="/dashboard" element={<GovernmentDashboard />} />
-          <Route path="/map" element={<MapView />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <LanguageProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/citizen" element={<CitizenApp />} />
+            <Route path="/worker" element={<WorkerApp />} />
+            <Route path="/dashboard" element={<GovernmentDashboard />} />
+            <Route path="/map" element={<MapView />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
