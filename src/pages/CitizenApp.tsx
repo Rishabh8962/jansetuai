@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye, Sparkles, Loader2, Lightbulb, IndianRupee, Users2, Map as MapIcon } from 'lucide-react';
+import { MapPin, Mic, MicOff, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye, Sparkles, Loader2, Lightbulb, IndianRupee, Users2, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,10 @@ import { SmartImageUpload } from '@/components/SmartImageUpload';
 import Leaderboard from '@/components/Leaderboard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLang } from '@/i18n/LanguageContext';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useVoiceInput } from '@/hooks/useVoiceInput';
+import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
