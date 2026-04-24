@@ -10,6 +10,8 @@ import { SmartImageUpload } from '@/components/SmartImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import jansetuLogo from '@/assets/jansetu-logo.png';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 
 type View = 'tasks' | 'detail' | 'notifications';
 
@@ -117,6 +119,7 @@ export default function WorkerApp() {
 
   return (
     <div className="min-h-screen bg-background cyber-grid">
+      <RealtimeNotificationBridge audience="worker" />
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view === 'detail' ? (
