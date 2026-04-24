@@ -7,6 +7,7 @@ import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveRevie
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
 import CityMap from '@/components/CityMap';
+import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
