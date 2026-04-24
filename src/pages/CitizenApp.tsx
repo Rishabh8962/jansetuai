@@ -25,13 +25,13 @@ type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications'
 export default function CitizenApp() {
   useStoreRefresh();
   const navigate = useNavigate();
+  const { t } = useLang();
   const [view, setView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | ''>('');
   const [description, setDescription] = useState('');
   const [trackingId, setTrackingId] = useState('');
   const [newComplaintId, setNewComplaintId] = useState('');
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [reportComplaintId, setReportComplaintId] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
@@ -131,13 +131,18 @@ export default function CitizenApp() {
     under_review: 'Under Review', rework_required: 'Rework Required', completed: 'Resolved',
   };
 
-  const simulateVoice = () => {
-    setIsRecording(true);
-    setTimeout(() => {
-      setDescription('There is a large pothole near the main junction causing traffic issues');
-      setSelectedCategory('pothole');
-      setIsRecording(false);
-    }, 2000);
+  // Real browser SpeechRecognition (en-IN / hi-IN based on selected language)
+  const voice = useVoiceInput({
+    onResult: (text) => setDescription(text),
+  });
+
+  const toggleVoice = () => {
+    if (!voice.supported) {
+      toast.error(t('report.voice_unsupported', 'Voice input not supported in this browser'));
+      return;
+    }
+    if (voice.isListening) voice.stop();
+    else voice.start();
   };
 
   const report = reportComplaintId ? getCitizenReport(reportComplaintId) : null;
