@@ -295,8 +295,91 @@ export default function CitizenApp() {
                   </motion.div>
                 )}
 
-                <div>
-                  <label className="section-title mb-2 block">Issue Category {aiResult && '(auto-detected — editable)'}</label>
+                {/* AI Smart features: Explainability, Cost estimate, Duplicate detection */}
+                {aiResult && !aiAnalyzing && (() => {
+                  const reasons = explainClassification(aiResult.category, aiResult.confidence);
+                  const cost = estimateRepairCost(aiResult.category, aiResult.severity);
+                  const dupes = findDuplicates(complaints, {
+                    lat: 12.9716, lng: 77.5946, category: aiResult.category,
+                  });
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="grid gap-3"
+                    >
+                      {/* Explainability */}
+                      <div className="glass-card p-3 border-accent/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Lightbulb className="w-4 h-4 text-accent" />
+                          <div className="text-xs font-semibold text-accent uppercase tracking-wide">Why this classification?</div>
+                        </div>
+                        <ul className="space-y-1">
+                          {reasons.map((r, i) => (
+                            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                              <span className="text-accent mt-0.5">•</span>{r}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Cost estimation */}
+                      <div className="glass-card p-3 border-warning/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <IndianRupee className="w-4 h-4 text-warning" />
+                            <div className="text-xs font-semibold text-warning uppercase tracking-wide">Estimated Repair Cost</div>
+                          </div>
+                          <div className="text-sm font-mono font-bold gradient-text">
+                            {cost.currency}{cost.min.toLocaleString()} – {cost.currency}{cost.max.toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-1">
+                          <Clock className="w-3 h-3" /> ~{cost.estimatedHours}h work · avg {cost.currency}{cost.avg.toLocaleString()}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {cost.materials.map(m => (
+                            <span key={m} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground">{m}</span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Duplicate detection */}
+                      {dupes.length > 0 && (
+                        <div className="glass-card p-3 border-primary/30">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Users2 className="w-4 h-4 text-primary" />
+                            <div className="text-xs font-semibold text-primary uppercase tracking-wide">
+                              {dupes.length} similar complaint{dupes.length > 1 ? 's' : ''} nearby
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            {dupes.map(d => (
+                              <button
+                                key={d.id}
+                                onClick={() => { setSelectedComplaint(d); setView('detail'); }}
+                                className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                              >
+                                <span className="text-base">{getCategoryIcon(d.category)}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-medium truncate">{d.id} · {d.ward}</div>
+                                  <div className="text-[10px] text-muted-foreground truncate">{d.description}</div>
+                                </div>
+                                <span className={`text-[10px] font-medium ${getStatusColor(d.status)}`}>
+                                  {d.status.replace(/_/g, ' ')}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-2 italic">
+                            You can still submit — the system will link your report to the existing thread.
+                          </p>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })()}
                   <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as ComplaintCategory)}>
                     <SelectTrigger className="bg-card border-border">
                       <SelectValue placeholder="Select category" />
