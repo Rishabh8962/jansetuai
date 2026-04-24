@@ -149,6 +149,7 @@ export default function CitizenApp() {
 
   return (
     <div className="min-h-screen bg-background cyber-grid">
+      <RealtimeNotificationBridge audience="citizen" />
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view !== 'home' ? (
@@ -166,14 +167,17 @@ export default function CitizenApp() {
               <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span>
             </h1>
           </div>
-          <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
+            <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
