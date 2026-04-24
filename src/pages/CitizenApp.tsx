@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mic, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye, Sparkles, Loader2, Lightbulb, IndianRupee, Users2, Map as MapIcon } from 'lucide-react';
+import { MapPin, Mic, MicOff, Send, ArrowLeft, CheckCircle2, Clock, AlertTriangle, Search, ChevronRight, Star, Bell, FileText, ShieldCheck, Eye, Sparkles, Loader2, Lightbulb, IndianRupee, Users2, Map as MapIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,19 +15,23 @@ import { SmartImageUpload } from '@/components/SmartImageUpload';
 import Leaderboard from '@/components/Leaderboard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLang } from '@/i18n/LanguageContext';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useVoiceInput } from '@/hooks/useVoiceInput';
+import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
 export default function CitizenApp() {
   useStoreRefresh();
   const navigate = useNavigate();
+  const { t } = useLang();
   const [view, setView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<ComplaintCategory | ''>('');
   const [description, setDescription] = useState('');
   const [trackingId, setTrackingId] = useState('');
   const [newComplaintId, setNewComplaintId] = useState('');
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [reportComplaintId, setReportComplaintId] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
@@ -127,19 +131,25 @@ export default function CitizenApp() {
     under_review: 'Under Review', rework_required: 'Rework Required', completed: 'Resolved',
   };
 
-  const simulateVoice = () => {
-    setIsRecording(true);
-    setTimeout(() => {
-      setDescription('There is a large pothole near the main junction causing traffic issues');
-      setSelectedCategory('pothole');
-      setIsRecording(false);
-    }, 2000);
+  // Real browser SpeechRecognition (en-IN / hi-IN based on selected language)
+  const voice = useVoiceInput({
+    onResult: (text) => setDescription(text),
+  });
+
+  const toggleVoice = () => {
+    if (!voice.supported) {
+      toast.error(t('report.voice_unsupported', 'Voice input not supported in this browser'));
+      return;
+    }
+    if (voice.isListening) voice.stop();
+    else voice.start();
   };
 
   const report = reportComplaintId ? getCitizenReport(reportComplaintId) : null;
 
   return (
     <div className="min-h-screen bg-background cyber-grid">
+      <RealtimeNotificationBridge audience="citizen" />
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view !== 'home' ? (
@@ -157,14 +167,17 @@ export default function CitizenApp() {
               <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span>
             </h1>
           </div>
-          <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
+            <button onClick={() => setView('notifications')} className="relative text-muted-foreground hover:text-foreground">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -174,30 +187,32 @@ export default function CitizenApp() {
             <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div className="text-center py-6">
                 <img src={jansetuLogo} alt="JanSetu AI" className="w-16 h-16 mx-auto mb-4 rounded-2xl" />
-                <h2 className="text-2xl font-bold mb-1">Report & Track</h2>
-                <p className="text-sm text-muted-foreground">Civic issues in your neighborhood</p>
+                <h2 className="text-2xl font-bold mb-1">{t('app.report_track', 'Report & Track')}</h2>
+                <p className="text-sm text-muted-foreground">{t('app.tagline', 'Civic issues in your neighborhood')}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setView('report')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <AlertTriangle className="w-6 h-6 text-warning mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">Report Issue</div>
-                  <div className="text-xs text-muted-foreground mt-1">Upload photo or describe</div>
+                  <div className="font-semibold text-sm">{t('home.report_issue', 'Report Issue')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('home.report_issue_sub', 'Upload photo or describe')}</div>
                 </button>
                 <button onClick={() => setView('track')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <Search className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">Track Status</div>
-                  <div className="text-xs text-muted-foreground mt-1">Check your complaint</div>
+                  <div className="font-semibold text-sm">{t('home.track_status', 'Track Status')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('home.track_status_sub', 'Check your complaint')}</div>
                 </button>
                 <button onClick={() => navigate('/map')} className="glass-card p-5 text-left hover:border-accent/50 transition-colors group">
                   <MapIcon className="w-6 h-6 text-accent mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">City Map</div>
-                  <div className="text-xs text-muted-foreground mt-1">Heatmap & live markers</div>
+                  <div className="font-semibold text-sm">{t('home.city_map', 'City Map')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('home.city_map_sub', 'Heatmap & live markers')}</div>
                 </button>
                 <button onClick={() => setView('notifications')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <Bell className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">Notifications</div>
-                  <div className="text-xs text-muted-foreground mt-1">{unreadCount > 0 ? `${unreadCount} new updates` : 'All caught up'}</div>
+                  <div className="font-semibold text-sm">{t('home.notifications', 'Notifications')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {unreadCount > 0 ? `${unreadCount} ${t('home.notifications', 'new updates')}` : t('home.notifications_caught_up', 'All caught up')}
+                  </div>
                 </button>
               </div>
 
@@ -409,20 +424,37 @@ export default function CitizenApp() {
                   </Select>
                 </div>
                 <div>
-                  <label className="section-title mb-2 block">Description {aiResult && '(AI-generated — editable)'}</label>
+                  <label className="section-title mb-2 block">
+                    {t('report.description_label', 'Description')} {aiResult && t('report.description_auto', '(AI-generated — editable)')}
+                  </label>
                   <Textarea value={description} onChange={e => setDescription(e.target.value)}
-                    placeholder="Describe the issue..." className="bg-card border-border min-h-[80px]" />
+                    placeholder={t('report.description_placeholder', 'Describe the issue, or use voice input…')}
+                    className="bg-card border-border min-h-[80px]" />
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={simulateVoice}
-                    className={`flex-1 gap-2 border-border ${isRecording ? 'border-destructive text-destructive animate-pulse' : ''}`}>
-                    <Mic className="w-4 h-4" /> {isRecording ? 'Listening...' : 'Voice Report'}
+                  <Button
+                    variant="outline"
+                    onClick={toggleVoice}
+                    disabled={!voice.supported}
+                    className={`flex-1 gap-2 border-border ${
+                      voice.isListening ? 'border-destructive text-destructive animate-pulse' : ''
+                    }`}
+                  >
+                    {voice.isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    {voice.isListening
+                      ? t('report.voice_listening', 'Listening… speak now')
+                      : t('report.voice', 'Voice Report')}
                   </Button>
                 </div>
+                {!voice.supported && (
+                  <p className="text-[11px] text-muted-foreground -mt-1">
+                    {t('report.voice_unsupported', 'Voice input not supported in this browser')}
+                  </p>
+                )}
                 <div className="glass-card p-3 flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-primary" />
                   <div>
-                    <div className="text-xs text-muted-foreground">GPS Location Detected</div>
+                    <div className="text-xs text-muted-foreground">{t('report.gps_detected', 'GPS Location Detected')}</div>
                     <div className="text-sm font-mono">12.9716° N, 77.5946° E</div>
                   </div>
                   <div className="status-dot-active ml-auto" />
