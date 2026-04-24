@@ -422,20 +422,37 @@ export default function CitizenApp() {
                   </Select>
                 </div>
                 <div>
-                  <label className="section-title mb-2 block">Description {aiResult && '(AI-generated — editable)'}</label>
+                  <label className="section-title mb-2 block">
+                    {t('report.description_label', 'Description')} {aiResult && t('report.description_auto', '(AI-generated — editable)')}
+                  </label>
                   <Textarea value={description} onChange={e => setDescription(e.target.value)}
-                    placeholder="Describe the issue..." className="bg-card border-border min-h-[80px]" />
+                    placeholder={t('report.description_placeholder', 'Describe the issue, or use voice input…')}
+                    className="bg-card border-border min-h-[80px]" />
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={simulateVoice}
-                    className={`flex-1 gap-2 border-border ${isRecording ? 'border-destructive text-destructive animate-pulse' : ''}`}>
-                    <Mic className="w-4 h-4" /> {isRecording ? 'Listening...' : 'Voice Report'}
+                  <Button
+                    variant="outline"
+                    onClick={toggleVoice}
+                    disabled={!voice.supported}
+                    className={`flex-1 gap-2 border-border ${
+                      voice.isListening ? 'border-destructive text-destructive animate-pulse' : ''
+                    }`}
+                  >
+                    {voice.isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    {voice.isListening
+                      ? t('report.voice_listening', 'Listening… speak now')
+                      : t('report.voice', 'Voice Report')}
                   </Button>
                 </div>
+                {!voice.supported && (
+                  <p className="text-[11px] text-muted-foreground -mt-1">
+                    {t('report.voice_unsupported', 'Voice input not supported in this browser')}
+                  </p>
+                )}
                 <div className="glass-card p-3 flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-primary" />
                   <div>
-                    <div className="text-xs text-muted-foreground">GPS Location Detected</div>
+                    <div className="text-xs text-muted-foreground">{t('report.gps_detected', 'GPS Location Detected')}</div>
                     <div className="text-sm font-mono">12.9716° N, 77.5946° E</div>
                   </div>
                   <div className="status-dot-active ml-auto" />
