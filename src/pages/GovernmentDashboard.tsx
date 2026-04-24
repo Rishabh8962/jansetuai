@@ -7,6 +7,7 @@ import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveRevie
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
 import CityMap from '@/components/CityMap';
+import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -574,14 +575,16 @@ function ReviewTab() {
                 <div className="bg-muted/30 rounded-lg p-3 space-y-2">
                   <div className="text-xs font-medium text-primary">Worker's Report</div>
                   <p className="text-sm">{item.workerNotes}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="h-20 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">
-                      📷 Before (complaint)
-                    </div>
-                    <div className="h-20 bg-muted rounded flex items-center justify-center text-muted-foreground text-xs">
-                      📷 After (repair)
-                    </div>
-                  </div>
+                  <BeforeAfterSlider
+                    beforeUrl={complaint.imageUrl || '/placeholder.svg'}
+                    afterUrl={item.workerRepairImageUrl || '/placeholder.svg'}
+                    beforeLabel="Before · Reported"
+                    afterLabel="After · Repaired"
+                    height={220}
+                    improvementPct={item.aiVerification && !item.aiVerification.issueStillDetected
+                      ? Math.round(item.aiVerification.confidence * 100)
+                      : undefined}
+                  />
                   <div className="text-[10px] text-muted-foreground">Completed: {new Date(item.completedAt).toLocaleString()}</div>
                 </div>
 
