@@ -105,6 +105,7 @@ export default function GovernmentDashboard() {
                 </span>
               </button>
             )}
+            <LanguageSwitcher compact />
             <div className="status-dot-active" />
             <span className="text-xs text-muted-foreground">LIVE</span>
           </div>
