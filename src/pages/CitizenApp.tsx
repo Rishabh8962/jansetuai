@@ -187,30 +187,32 @@ export default function CitizenApp() {
             <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div className="text-center py-6">
                 <img src={jansetuLogo} alt="JanSetu AI" className="w-16 h-16 mx-auto mb-4 rounded-2xl" />
-                <h2 className="text-2xl font-bold mb-1">Report & Track</h2>
-                <p className="text-sm text-muted-foreground">Civic issues in your neighborhood</p>
+                <h2 className="text-2xl font-bold mb-1">{t('app.report_track', 'Report & Track')}</h2>
+                <p className="text-sm text-muted-foreground">{t('app.tagline', 'Civic issues in your neighborhood')}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setView('report')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <AlertTriangle className="w-6 h-6 text-warning mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">Report Issue</div>
-                  <div className="text-xs text-muted-foreground mt-1">Upload photo or describe</div>
+                  <div className="font-semibold text-sm">{t('home.report_issue', 'Report Issue')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('home.report_issue_sub', 'Upload photo or describe')}</div>
                 </button>
                 <button onClick={() => setView('track')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <Search className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">Track Status</div>
-                  <div className="text-xs text-muted-foreground mt-1">Check your complaint</div>
+                  <div className="font-semibold text-sm">{t('home.track_status', 'Track Status')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('home.track_status_sub', 'Check your complaint')}</div>
                 </button>
                 <button onClick={() => navigate('/map')} className="glass-card p-5 text-left hover:border-accent/50 transition-colors group">
                   <MapIcon className="w-6 h-6 text-accent mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">City Map</div>
-                  <div className="text-xs text-muted-foreground mt-1">Heatmap & live markers</div>
+                  <div className="font-semibold text-sm">{t('home.city_map', 'City Map')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('home.city_map_sub', 'Heatmap & live markers')}</div>
                 </button>
                 <button onClick={() => setView('notifications')} className="glass-card p-5 text-left hover:border-primary/50 transition-colors group">
                   <Bell className="w-6 h-6 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="font-semibold text-sm">Notifications</div>
-                  <div className="text-xs text-muted-foreground mt-1">{unreadCount > 0 ? `${unreadCount} new updates` : 'All caught up'}</div>
+                  <div className="font-semibold text-sm">{t('home.notifications', 'Notifications')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {unreadCount > 0 ? `${unreadCount} ${t('home.notifications', 'new updates')}` : t('home.notifications_caught_up', 'All caught up')}
+                  </div>
                 </button>
               </div>
 
