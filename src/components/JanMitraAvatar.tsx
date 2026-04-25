@@ -74,7 +74,7 @@ export function JanMitraAvatar({ state, mood = 'neutral', size = 120, mouth = 0 
         {/* Face SVG */}
         <svg viewBox="-30 -30 60 60" className="relative w-full h-full">
           {/* Eyes */}
-          <g fill="white" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none">
+          <g stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none">
             <motion.path
               d={eyeArc}
               transform="translate(-9 -4)"
