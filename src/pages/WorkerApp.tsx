@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import jansetuLogo from '@/assets/jansetu-logo.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
+import { JanMitraAssistant } from '@/components/JanMitraAssistant';
 
 type View = 'tasks' | 'detail' | 'notifications';
 
@@ -120,6 +121,19 @@ export default function WorkerApp() {
   return (
     <div className="min-h-screen bg-background cyber-grid">
       <RealtimeNotificationBridge audience="worker" />
+      <JanMitraAssistant
+        role="worker"
+        context={{
+          view,
+          stats,
+          currentTask: selectedTask ? { id: selectedTask.id, category: selectedTask.category, status: selectedTask.status, priority: selectedTask.priority, ward: selectedTask.ward } : null,
+          unreadNotifications: unreadCount,
+        }}
+        onAction={(a) => {
+          if (a === 'view_tasks') setView('tasks');
+          else if (a === 'upload_repair' && selectedTask) setView('detail');
+        }}
+      />
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view === 'detail' ? (
