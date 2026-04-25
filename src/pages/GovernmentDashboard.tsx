@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import jansetuLogo from '@/assets/jansetu-logo.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
+import { JanMitraAssistant } from '@/components/JanMitraAssistant';
 
 type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review' | 'copilot';
 
@@ -84,6 +85,19 @@ export default function GovernmentDashboard() {
   return (
     <div className="min-h-screen bg-background cyber-grid">
       <RealtimeNotificationBridge audience="admin" />
+      <JanMitraAssistant
+        role="authority"
+        context={{
+          tab,
+          stats,
+          reviewQueueCount: reviewQueue.length,
+          departments: departments.slice(0, 6).map(d => ({ name: d.name, trustScore: d.trustScore, avgResolutionTime: d.avgResolutionTime })),
+        }}
+        onAction={(a) => {
+          if (a === 'view_analytics') setTab('analytics');
+          else if (a === 'view_review_queue') setTab('review');
+        }}
+      />
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center gap-3 px-4 py-3">
           <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">

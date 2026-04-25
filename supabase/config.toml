@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.verify-repair]
 verify_jwt = false
+
+[functions.janmitra-chat]
+verify_jwt = false

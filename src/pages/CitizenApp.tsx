@@ -19,6 +19,7 @@ import { useLang } from '@/i18n/LanguageContext';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
+import { JanMitraAssistant } from '@/components/JanMitraAssistant';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
@@ -150,6 +151,21 @@ export default function CitizenApp() {
   return (
     <div className="min-h-screen bg-background cyber-grid">
       <RealtimeNotificationBridge audience="citizen" />
+      <JanMitraAssistant
+        role="citizen"
+        context={{
+          view,
+          totalComplaints: complaints.length,
+          unreadNotifications: unreadCount,
+          recentComplaints: myComplaints.slice(0, 5).map(c => ({ id: c.id, category: c.category, status: c.status })),
+        }}
+        onAction={(a) => {
+          if (a === 'report_issue') setView('report');
+          else if (a === 'track_complaint') setView('track');
+          else if (a === 'open_notifications') setView('notifications');
+          else if (a === 'open_map') navigate('/map');
+        }}
+      />
       <div className="sticky top-0 z-50 glass-card border-b border-border/50 rounded-none">
         <div className="flex items-center justify-between px-4 py-3">
           {view !== 'home' ? (
