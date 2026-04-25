@@ -8,11 +8,8 @@ import CitizenApp from "./pages/CitizenApp";
 import WorkerApp from "./pages/WorkerApp";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import MapView from "./pages/MapView";
-import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { LanguageProvider } from "./i18n/LanguageContext";
-import { AuthProvider } from "./auth/AuthContext";
-import { ProtectedRoute } from "./auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -23,38 +20,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/map" element={<MapView />} />
-              <Route
-                path="/citizen"
-                element={
-                  <ProtectedRoute allow={["citizen", "authority"]}>
-                    <CitizenApp />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/worker"
-                element={
-                  <ProtectedRoute allow={["worker", "authority"]}>
-                    <WorkerApp />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute allow={["authority"]}>
-                    <GovernmentDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/citizen" element={<CitizenApp />} />
+            <Route path="/worker" element={<WorkerApp />} />
+            <Route path="/dashboard" element={<GovernmentDashboard />} />
+            <Route path="/map" element={<MapView />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>

@@ -3,8 +3,6 @@ import { MapPin, Users, Wrench, BarChart3, Building2, Zap, Sparkles, ArrowRight,
 import { useNavigate } from 'react-router-dom';
 import jansetuLogo from '@/assets/jansetu-logo.png';
 import { Button } from '@/components/ui/button';
-import { UserMenu } from '@/components/UserMenu';
-import { useAuth } from '@/auth/AuthContext';
 
 const roles = [
   {
@@ -45,8 +43,6 @@ const features = [
 
 export default function Index() {
   const navigate = useNavigate();
-  const { user, primaryRole } = useAuth();
-  const goToPortal = (path: string) => navigate(user ? path : '/auth');
 
   return (
     <div className="min-h-screen bg-background cyber-grid relative overflow-hidden">
@@ -79,15 +75,12 @@ export default function Index() {
           <a href="#roles" className="px-3 py-1.5 rounded-lg hover:text-foreground hover:bg-white/5 transition-colors">Portals</a>
           <button onClick={() => navigate('/citizen')} className="px-3 py-1.5 rounded-lg hover:text-foreground hover:bg-white/5 transition-colors">Track</button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => goToPortal('/citizen')}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-xl"
-          >
-            {user ? 'Open Portal' : 'Get Started'} <ArrowRight className="w-4 h-4" />
-          </Button>
-          <UserMenu />
-        </div>
+        <Button
+          onClick={() => navigate('/citizen')}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-xl"
+        >
+          Report Issue <ArrowRight className="w-4 h-4" />
+        </Button>
       </nav>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 pt-8 pb-20">
@@ -111,15 +104,15 @@ export default function Index() {
           <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
             <Button
               size="lg"
-              onClick={() => goToPortal('/citizen')}
+              onClick={() => navigate('/citizen')}
               className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-xl shadow-lg shadow-primary/30"
             >
-              <Camera className="w-4 h-4" /> {user ? 'Report Now' : 'Sign in to Report'}
+              <Camera className="w-4 h-4" /> Report Now
             </Button>
             <Button
               size="lg"
               variant="outline"
-              onClick={() => goToPortal('/dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="border-white/15 bg-white/5 hover:bg-white/10 gap-2 rounded-xl"
             >
               View Command Center
@@ -164,7 +157,7 @@ export default function Index() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
-                onClick={() => goToPortal(role.path)}
+                onClick={() => navigate(role.path)}
                 className="glass-card glass-card-hover p-6 text-left group relative overflow-hidden"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
