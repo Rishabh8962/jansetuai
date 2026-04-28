@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_feedback: {
+        Row: {
+          complaint_id: string | null
+          corrected_category: string | null
+          corrected_priority: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          input_text: string | null
+          predicted_category: string
+          predicted_confidence: number | null
+          predicted_priority: string | null
+          reasoning: Json | null
+          user_id: string | null
+          was_correct: boolean | null
+        }
+        Insert: {
+          complaint_id?: string | null
+          corrected_category?: string | null
+          corrected_priority?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          input_text?: string | null
+          predicted_category: string
+          predicted_confidence?: number | null
+          predicted_priority?: string | null
+          reasoning?: Json | null
+          user_id?: string | null
+          was_correct?: boolean | null
+        }
+        Update: {
+          complaint_id?: string | null
+          corrected_category?: string | null
+          corrected_priority?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          input_text?: string | null
+          predicted_category?: string
+          predicted_confidence?: number | null
+          predicted_priority?: string | null
+          reasoning?: Json | null
+          user_id?: string | null
+          was_correct?: boolean | null
+        }
+        Relationships: []
+      }
       complaint_events: {
         Row: {
           actor_id: string | null
