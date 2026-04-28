@@ -282,11 +282,7 @@ export default function Classify() {
                     <X className="w-3 h-3" />
                   </Button>
                 </div>
-                <SmartImageUpload
-                  onImageUploaded={(u) => setImageUrl(u)}
-                  onImageCleared={() => setImageUrl(null)}
-                  currentImage={imageUrl}
-                />
+                <SmartImageUpload onUploaded={(u) => setImageUrl(u)} />
               </div>
             )}
           </div>
