@@ -15,6 +15,7 @@ import jansetuLogo from '@/assets/jansetu-logo.png';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
+import { AIPerformancePanel } from '@/components/AIPerformancePanel';
 
 type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review' | 'copilot';
 
@@ -303,6 +304,7 @@ export default function GovernmentDashboard() {
 
         {tab === 'analytics' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <AIPerformancePanel />
             <div className="glass-card p-4">
               <div className="section-title mb-4">Average Resolution Time by Category (hours)</div>
               <ResponsiveContainer width="100%" height={300}>
