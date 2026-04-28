@@ -78,26 +78,29 @@ export default function CitizenApp() {
     setAiResult(null);
   }, [selectedCategory, description, complaints.length, imageUrl, aiResult]);
 
-  const runAIDetection = async (url: string) => {
+  const runAIDetection = async (url: string | null, textOverride?: string) => {
+    const text = textOverride ?? description;
+    if (!url && !text) return;
     setAiAnalyzing(true);
     setAiResult(null);
+    setAiFeedback(null);
     try {
-      const { data, error } = await supabase.functions.invoke('detect-issue', {
-        body: { imageUrl: url },
+      const { data, error } = await supabase.functions.invoke('classify-complaint', {
+        body: { imageUrl: url || undefined, text },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setAiResult(data);
-      // Auto-fill form
-      setSelectedCategory(data.category);
-      if (!description) setDescription(data.description);
-      toast.success(`AI detected: ${CATEGORY_LABELS[data.category as ComplaintCategory] || data.category}`);
+      const result = data as AIIntelResult;
+      setAiResult(result);
+      setSelectedCategory(result.category as ComplaintCategory);
+      if (!description && result.description) setDescription(result.description);
+      toast.success(`AI: ${CATEGORY_LABELS[result.category as ComplaintCategory] || result.category} · ${(result.confidence * 100).toFixed(0)}%`);
     } catch (e: any) {
-      console.error('AI detection failed:', e);
-      const msg = e?.message || 'AI detection failed';
+      console.error('AI classify failed:', e);
+      const msg = e?.message || 'AI classification failed';
       if (msg.includes('Rate limit')) toast.error('AI rate limit reached. Please retry shortly.');
       else if (msg.includes('credits')) toast.error('AI credits exhausted. Add funds in workspace settings.');
-      else toast.error('AI detection failed. You can still submit manually.');
+      else toast.error('AI classification failed. You can still submit manually.');
     } finally {
       setAiAnalyzing(false);
     }
@@ -111,6 +114,43 @@ export default function CitizenApp() {
   const handleImageCleared = () => {
     setImageUrl(null);
     setAiResult(null);
+    setAiFeedback(null);
+  };
+
+  const analyzeText = async () => {
+    if (!description.trim()) {
+      toast.error('Type a description first.');
+      return;
+    }
+    await runAIDetection(imageUrl, description);
+  };
+
+  const submitFeedback = async (correct: boolean, correctedCategory?: string) => {
+    if (!aiResult) return;
+    setAiFeedback(correct ? 'correct' : 'corrected');
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase.from('ai_feedback').insert({
+        user_id: userData?.user?.id ?? null,
+        input_text: description || null,
+        image_url: imageUrl || null,
+        predicted_category: aiResult.category,
+        predicted_confidence: aiResult.confidence,
+        predicted_priority: aiResult.priority,
+        corrected_category: correctedCategory ?? null,
+        corrected_priority: null,
+        was_correct: correct,
+        reasoning: { factors: aiResult.factors, keywords: aiResult.keywords, adjustments: aiResult.adjustments } as any,
+      });
+      if (!correct && correctedCategory) {
+        setSelectedCategory(correctedCategory as ComplaintCategory);
+        toast.success('Correction saved — JanSetu AI is learning.');
+      } else {
+        toast.success('Thanks for confirming!');
+      }
+    } catch (e) {
+      console.error('feedback save failed', e);
+    }
   };
 
   const handleTrack = () => {
