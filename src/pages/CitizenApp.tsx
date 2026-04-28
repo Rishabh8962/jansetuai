@@ -76,6 +76,7 @@ export default function CitizenApp() {
     setDescription('');
     setImageUrl(null);
     setAiResult(null);
+    setAiFeedback(null);
   }, [selectedCategory, description, complaints.length, imageUrl, aiResult]);
 
   const runAIDetection = async (url: string | null, textOverride?: string) => {
