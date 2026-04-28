@@ -9,7 +9,6 @@ import WorkerApp from "./pages/WorkerApp";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import MapView from "./pages/MapView";
 import NotFound from "./pages/NotFound";
-import Classify from "./pages/Classify";
 import { LanguageProvider } from "./i18n/LanguageContext";
 
 const queryClient = new QueryClient();
@@ -22,8 +21,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Classify />} />
-            <Route path="/portals" element={<Index />} />
+            <Route path="/" element={<Index />} />
             <Route path="/citizen" element={<CitizenApp />} />
             <Route path="/worker" element={<WorkerApp />} />
             <Route path="/dashboard" element={<GovernmentDashboard />} />
