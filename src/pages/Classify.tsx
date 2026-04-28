@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Send, Sparkles, Image as ImageIcon, Mic, MicOff, ArrowRight, Building2, ShieldCheck, Lightbulb, X, History } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
