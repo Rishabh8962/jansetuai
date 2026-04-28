@@ -164,7 +164,7 @@ export default function Classify() {
           <Link to="/citizen" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
             <History className="w-3.5 h-3.5 inline mr-1" /> My complaints
           </Link>
-          <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
+          <Link to="/portals" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
             Advanced
           </Link>
         </div>
