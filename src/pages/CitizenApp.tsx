@@ -20,6 +20,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
+import { AIIntelligenceCard, type AIIntelResult } from '@/components/AIIntelligenceCard';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
@@ -36,14 +37,8 @@ export default function CitizenApp() {
   const [reportComplaintId, setReportComplaintId] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
-  const [aiResult, setAiResult] = useState<{
-    category: ComplaintCategory;
-    confidence: number;
-    severity: 'low' | 'medium' | 'high';
-    title: string;
-    description: string;
-    department: string;
-  } | null>(null);
+  const [aiResult, setAiResult] = useState<AIIntelResult | null>(null);
+  const [aiFeedback, setAiFeedback] = useState<'correct' | 'corrected' | null>(null);
   const complaints = getComplaints();
   const citizenNotifications = getNotifications('citizen');
   const unreadCount = citizenNotifications.filter(n => !n.read).length;
