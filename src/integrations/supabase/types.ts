@@ -14,16 +14,388 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      complaint_events: {
+        Row: {
+          actor_id: string | null
+          complaint_id: string
+          created_at: string
+          event_type: string
+          id: string
+          message: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          complaint_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          complaint_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaint_events_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaints: {
+        Row: {
+          ai_confidence: number | null
+          ai_detected_category: string | null
+          ai_severity: string | null
+          ai_verification: Json | null
+          assigned_worker: string | null
+          category: string
+          citizen_id: string | null
+          citizen_name: string | null
+          created_at: string
+          department: string | null
+          description: string | null
+          display_id: string | null
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          priority: string
+          resolution_time_hours: number | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["complaint_status"]
+          updated_at: string
+          ward: string | null
+          worker_id: string | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_detected_category?: string | null
+          ai_severity?: string | null
+          ai_verification?: Json | null
+          assigned_worker?: string | null
+          category: string
+          citizen_id?: string | null
+          citizen_name?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          display_id?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          priority?: string
+          resolution_time_hours?: number | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["complaint_status"]
+          updated_at?: string
+          ward?: string | null
+          worker_id?: string | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_detected_category?: string | null
+          ai_severity?: string | null
+          ai_verification?: Json | null
+          assigned_worker?: string | null
+          category?: string
+          citizen_id?: string | null
+          citizen_name?: string | null
+          created_at?: string
+          department?: string | null
+          description?: string | null
+          display_id?: string | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          priority?: string
+          resolution_time_hours?: number | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["complaint_status"]
+          updated_at?: string
+          ward?: string | null
+          worker_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          avg_resolution_time: number
+          contact: string | null
+          created_at: string
+          head: string | null
+          id: string
+          name: string
+          trust_score: number
+        }
+        Insert: {
+          avg_resolution_time?: number
+          contact?: string | null
+          created_at?: string
+          head?: string | null
+          id?: string
+          name: string
+          trust_score?: number
+        }
+        Update: {
+          avg_resolution_time?: number
+          contact?: string | null
+          created_at?: string
+          head?: string | null
+          id?: string
+          name?: string
+          trust_score?: number
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          audience: string
+          complaint_id: string | null
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          recipient_id: string | null
+          title: string
+        }
+        Insert: {
+          audience: string
+          complaint_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          recipient_id?: string | null
+          title: string
+        }
+        Update: {
+          audience?: string
+          complaint_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          recipient_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          badges: string[]
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          points: number
+          updated_at: string
+          user_id: string
+          ward: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          badges?: string[]
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          points?: number
+          updated_at?: string
+          user_id: string
+          ward?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          badges?: string[]
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          points?: number
+          updated_at?: string
+          user_id?: string
+          ward?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          admin_notes: string | null
+          ai_verification: Json | null
+          approved: boolean | null
+          complaint_id: string
+          completed_at: string
+          id: string
+          repair_image_url: string | null
+          reviewed: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          worker_id: string | null
+          worker_notes: string | null
+          worker_user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_verification?: Json | null
+          approved?: boolean | null
+          complaint_id: string
+          completed_at?: string
+          id?: string
+          repair_image_url?: string | null
+          reviewed?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          worker_id?: string | null
+          worker_notes?: string | null
+          worker_user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_verification?: Json | null
+          approved?: boolean | null
+          complaint_id?: string
+          completed_at?: string
+          id?: string
+          repair_image_url?: string | null
+          reviewed?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          worker_id?: string | null
+          worker_notes?: string | null
+          worker_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_complaint_id_fkey"
+            columns: ["complaint_id"]
+            isOneToOne: false
+            referencedRelation: "complaints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workers: {
+        Row: {
+          active_tasks: number
+          completed_tasks: number
+          created_at: string
+          department: string
+          id: string
+          name: string
+          phone: string | null
+          rating: number
+          status: string
+          user_id: string | null
+          ward: string | null
+        }
+        Insert: {
+          active_tasks?: number
+          completed_tasks?: number
+          created_at?: string
+          department: string
+          id?: string
+          name: string
+          phone?: string | null
+          rating?: number
+          status?: string
+          user_id?: string | null
+          ward?: string | null
+        }
+        Update: {
+          active_tasks?: number
+          completed_tasks?: number
+          created_at?: string
+          department?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          rating?: number
+          status?: string
+          user_id?: string | null
+          ward?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "citizen" | "worker" | "authority"
+      complaint_status:
+        | "submitted"
+        | "assigned"
+        | "in_progress"
+        | "under_review"
+        | "rework_required"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +522,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["citizen", "worker", "authority"],
+      complaint_status: [
+        "submitted",
+        "assigned",
+        "in_progress",
+        "under_review",
+        "rework_required",
+        "completed",
+      ],
+    },
   },
 } as const
