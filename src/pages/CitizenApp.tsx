@@ -319,90 +319,23 @@ export default function CitizenApp() {
                   initialUrl={imageUrl ?? undefined}
                 />
 
-                {/* AI Analysis state */}
-                {aiAnalyzing && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="glass-card p-3 border-primary/30 flex items-center gap-3"
-                  >
-                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                    <div>
-                      <div className="text-sm font-medium text-primary flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5" /> AI is analyzing your photo…
-                      </div>
-                      <div className="text-xs text-muted-foreground">Detecting issue category and severity</div>
-                    </div>
-                  </motion.div>
-                )}
+                {/* Hero AI intelligence card */}
+                <AIIntelligenceCard
+                  loading={aiAnalyzing}
+                  result={aiResult}
+                  confirmed={aiFeedback}
+                  onConfirm={submitFeedback}
+                />
 
-                {/* AI Detection Result */}
-                {aiResult && !aiAnalyzing && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="glass-card p-4 border-primary/40 space-y-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                        <Eye className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-xs text-muted-foreground">AI Vision Result</div>
-                        <div className="text-sm font-semibold text-foreground">
-                          {getCategoryIcon(aiResult.category)} {CATEGORY_LABELS[aiResult.category] || aiResult.category}
-                        </div>
-                      </div>
-                      <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-success/15 text-success">
-                        {(aiResult.confidence * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground italic">"{aiResult.title}"</p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                        Dept: {aiResult.department}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-full font-medium ${
-                        aiResult.severity === 'high' ? 'bg-destructive/15 text-destructive'
-                        : aiResult.severity === 'low' ? 'bg-success/15 text-success'
-                        : 'bg-warning/15 text-warning'
-                      }`}>
-                        Severity: {aiResult.severity}
-                      </span>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* AI Smart features: Explainability, Cost estimate, Duplicate detection */}
+                {/* Cost estimate + duplicate detection (kept as supporting cards) */}
                 {aiResult && !aiAnalyzing && (() => {
-                  const reasons = explainClassification(aiResult.category, aiResult.confidence);
-                  const cost = estimateRepairCost(aiResult.category, aiResult.severity);
+                  const cat = aiResult.category as ComplaintCategory;
+                  const cost = estimateRepairCost(cat, aiResult.severity);
                   const dupes = findDuplicates(complaints, {
-                    lat: 12.9716, lng: 77.5946, category: aiResult.category,
+                    lat: 12.9716, lng: 77.5946, category: cat,
                   });
                   return (
-                    <motion.div
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="grid gap-3"
-                    >
-                      {/* Explainability */}
-                      <div className="glass-card p-3 border-accent/30">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Lightbulb className="w-4 h-4 text-accent" />
-                          <div className="text-xs font-semibold text-accent uppercase tracking-wide">Why this classification?</div>
-                        </div>
-                        <ul className="space-y-1">
-                          {reasons.map((r, i) => (
-                            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                              <span className="text-accent mt-0.5">•</span>{r}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Cost estimation */}
+                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid gap-3">
                       <div className="glass-card p-3 border-warning/20">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -423,7 +356,6 @@ export default function CitizenApp() {
                         </div>
                       </div>
 
-                      {/* Duplicate detection */}
                       {dupes.length > 0 && (
                         <div className="glass-card p-3 border-primary/30">
                           <div className="flex items-center gap-2 mb-2">
@@ -434,11 +366,8 @@ export default function CitizenApp() {
                           </div>
                           <div className="space-y-1.5">
                             {dupes.map(d => (
-                              <button
-                                key={d.id}
-                                onClick={() => { setSelectedComplaint(d); setView('detail'); }}
-                                className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors text-left"
-                              >
+                              <button key={d.id} onClick={() => { setSelectedComplaint(d); setView('detail'); }}
+                                className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors text-left">
                                 <span className="text-base">{getCategoryIcon(d.category)}</span>
                                 <div className="flex-1 min-w-0">
                                   <div className="text-xs font-medium truncate">{d.id} · {d.ward}</div>
@@ -451,7 +380,7 @@ export default function CitizenApp() {
                             ))}
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-2 italic">
-                            You can still submit — the system will link your report to the existing thread.
+                            Semantic match — your report will be linked to the existing thread.
                           </p>
                         </div>
                       )}
