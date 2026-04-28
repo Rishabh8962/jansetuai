@@ -425,6 +425,15 @@ export default function CitizenApp() {
                       ? t('report.voice_listening', 'Listening… speak now')
                       : t('report.voice', 'Voice Report')}
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={analyzeText}
+                    disabled={aiAnalyzing || !description.trim()}
+                    className="flex-1 gap-2 border-primary/40 text-primary hover:bg-primary/10"
+                  >
+                    {aiAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    Analyze with AI
+                  </Button>
                 </div>
                 {!voice.supported && (
                   <p className="text-[11px] text-muted-foreground -mt-1">
