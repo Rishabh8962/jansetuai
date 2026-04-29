@@ -8,6 +8,3 @@ verify_jwt = false
 
 [functions.janmitra-chat]
 verify_jwt = false
-
-[functions.classify-complaint]
-verify_jwt = false

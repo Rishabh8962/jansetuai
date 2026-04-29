@@ -20,7 +20,6 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
-import { AIIntelligenceCard, type AIIntelResult } from '@/components/AIIntelligenceCard';
 
 type View = 'home' | 'report' | 'track' | 'detail' | 'success' | 'notifications' | 'full-report';
 
@@ -37,8 +36,14 @@ export default function CitizenApp() {
   const [reportComplaintId, setReportComplaintId] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
-  const [aiResult, setAiResult] = useState<AIIntelResult | null>(null);
-  const [aiFeedback, setAiFeedback] = useState<'correct' | 'corrected' | null>(null);
+  const [aiResult, setAiResult] = useState<{
+    category: ComplaintCategory;
+    confidence: number;
+    severity: 'low' | 'medium' | 'high';
+    title: string;
+    description: string;
+    department: string;
+  } | null>(null);
   const complaints = getComplaints();
   const citizenNotifications = getNotifications('citizen');
   const unreadCount = citizenNotifications.filter(n => !n.read).length;
@@ -76,32 +81,28 @@ export default function CitizenApp() {
     setDescription('');
     setImageUrl(null);
     setAiResult(null);
-    setAiFeedback(null);
   }, [selectedCategory, description, complaints.length, imageUrl, aiResult]);
 
-  const runAIDetection = async (url: string | null, textOverride?: string) => {
-    const text = textOverride ?? description;
-    if (!url && !text) return;
+  const runAIDetection = async (url: string) => {
     setAiAnalyzing(true);
     setAiResult(null);
-    setAiFeedback(null);
     try {
-      const { data, error } = await supabase.functions.invoke('classify-complaint', {
-        body: { imageUrl: url || undefined, text },
+      const { data, error } = await supabase.functions.invoke('detect-issue', {
+        body: { imageUrl: url },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      const result = data as AIIntelResult;
-      setAiResult(result);
-      setSelectedCategory(result.category as ComplaintCategory);
-      if (!description && result.description) setDescription(result.description);
-      toast.success(`AI: ${CATEGORY_LABELS[result.category as ComplaintCategory] || result.category} · ${(result.confidence * 100).toFixed(0)}%`);
+      setAiResult(data);
+      // Auto-fill form
+      setSelectedCategory(data.category);
+      if (!description) setDescription(data.description);
+      toast.success(`AI detected: ${CATEGORY_LABELS[data.category as ComplaintCategory] || data.category}`);
     } catch (e: any) {
-      console.error('AI classify failed:', e);
-      const msg = e?.message || 'AI classification failed';
+      console.error('AI detection failed:', e);
+      const msg = e?.message || 'AI detection failed';
       if (msg.includes('Rate limit')) toast.error('AI rate limit reached. Please retry shortly.');
       else if (msg.includes('credits')) toast.error('AI credits exhausted. Add funds in workspace settings.');
-      else toast.error('AI classification failed. You can still submit manually.');
+      else toast.error('AI detection failed. You can still submit manually.');
     } finally {
       setAiAnalyzing(false);
     }
@@ -115,43 +116,6 @@ export default function CitizenApp() {
   const handleImageCleared = () => {
     setImageUrl(null);
     setAiResult(null);
-    setAiFeedback(null);
-  };
-
-  const analyzeText = async () => {
-    if (!description.trim()) {
-      toast.error('Type a description first.');
-      return;
-    }
-    await runAIDetection(imageUrl, description);
-  };
-
-  const submitFeedback = async (correct: boolean, correctedCategory?: string) => {
-    if (!aiResult) return;
-    setAiFeedback(correct ? 'correct' : 'corrected');
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      await supabase.from('ai_feedback').insert({
-        user_id: userData?.user?.id ?? null,
-        input_text: description || null,
-        image_url: imageUrl || null,
-        predicted_category: aiResult.category,
-        predicted_confidence: aiResult.confidence,
-        predicted_priority: aiResult.priority,
-        corrected_category: correctedCategory ?? null,
-        corrected_priority: null,
-        was_correct: correct,
-        reasoning: { factors: aiResult.factors, keywords: aiResult.keywords, adjustments: aiResult.adjustments } as any,
-      });
-      if (!correct && correctedCategory) {
-        setSelectedCategory(correctedCategory as ComplaintCategory);
-        toast.success('Correction saved — JanSetu AI is learning.');
-      } else {
-        toast.success('Thanks for confirming!');
-      }
-    } catch (e) {
-      console.error('feedback save failed', e);
-    }
   };
 
   const handleTrack = () => {
@@ -320,23 +284,90 @@ export default function CitizenApp() {
                   initialUrl={imageUrl ?? undefined}
                 />
 
-                {/* Hero AI intelligence card */}
-                <AIIntelligenceCard
-                  loading={aiAnalyzing}
-                  result={aiResult}
-                  confirmed={aiFeedback}
-                  onConfirm={submitFeedback}
-                />
+                {/* AI Analysis state */}
+                {aiAnalyzing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-card p-3 border-primary/30 flex items-center gap-3"
+                  >
+                    <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                    <div>
+                      <div className="text-sm font-medium text-primary flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" /> AI is analyzing your photo…
+                      </div>
+                      <div className="text-xs text-muted-foreground">Detecting issue category and severity</div>
+                    </div>
+                  </motion.div>
+                )}
 
-                {/* Cost estimate + duplicate detection (kept as supporting cards) */}
+                {/* AI Detection Result */}
+                {aiResult && !aiAnalyzing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-card p-4 border-primary/40 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                        <Eye className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground">AI Vision Result</div>
+                        <div className="text-sm font-semibold text-foreground">
+                          {getCategoryIcon(aiResult.category)} {CATEGORY_LABELS[aiResult.category] || aiResult.category}
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-success/15 text-success">
+                        {(aiResult.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground italic">"{aiResult.title}"</p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                        Dept: {aiResult.department}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full font-medium ${
+                        aiResult.severity === 'high' ? 'bg-destructive/15 text-destructive'
+                        : aiResult.severity === 'low' ? 'bg-success/15 text-success'
+                        : 'bg-warning/15 text-warning'
+                      }`}>
+                        Severity: {aiResult.severity}
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* AI Smart features: Explainability, Cost estimate, Duplicate detection */}
                 {aiResult && !aiAnalyzing && (() => {
-                  const cat = aiResult.category as ComplaintCategory;
-                  const cost = estimateRepairCost(cat, aiResult.severity);
+                  const reasons = explainClassification(aiResult.category, aiResult.confidence);
+                  const cost = estimateRepairCost(aiResult.category, aiResult.severity);
                   const dupes = findDuplicates(complaints, {
-                    lat: 12.9716, lng: 77.5946, category: cat,
+                    lat: 12.9716, lng: 77.5946, category: aiResult.category,
                   });
                   return (
-                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid gap-3">
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="grid gap-3"
+                    >
+                      {/* Explainability */}
+                      <div className="glass-card p-3 border-accent/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Lightbulb className="w-4 h-4 text-accent" />
+                          <div className="text-xs font-semibold text-accent uppercase tracking-wide">Why this classification?</div>
+                        </div>
+                        <ul className="space-y-1">
+                          {reasons.map((r, i) => (
+                            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                              <span className="text-accent mt-0.5">•</span>{r}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Cost estimation */}
                       <div className="glass-card p-3 border-warning/20">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -357,6 +388,7 @@ export default function CitizenApp() {
                         </div>
                       </div>
 
+                      {/* Duplicate detection */}
                       {dupes.length > 0 && (
                         <div className="glass-card p-3 border-primary/30">
                           <div className="flex items-center gap-2 mb-2">
@@ -367,8 +399,11 @@ export default function CitizenApp() {
                           </div>
                           <div className="space-y-1.5">
                             {dupes.map(d => (
-                              <button key={d.id} onClick={() => { setSelectedComplaint(d); setView('detail'); }}
-                                className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors text-left">
+                              <button
+                                key={d.id}
+                                onClick={() => { setSelectedComplaint(d); setView('detail'); }}
+                                className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                              >
                                 <span className="text-base">{getCategoryIcon(d.category)}</span>
                                 <div className="flex-1 min-w-0">
                                   <div className="text-xs font-medium truncate">{d.id} · {d.ward}</div>
@@ -381,7 +416,7 @@ export default function CitizenApp() {
                             ))}
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-2 italic">
-                            Semantic match — your report will be linked to the existing thread.
+                            You can still submit — the system will link your report to the existing thread.
                           </p>
                         </div>
                       )}
@@ -425,15 +460,6 @@ export default function CitizenApp() {
                     {voice.isListening
                       ? t('report.voice_listening', 'Listening… speak now')
                       : t('report.voice', 'Voice Report')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={analyzeText}
-                    disabled={aiAnalyzing || !description.trim()}
-                    className="flex-1 gap-2 border-primary/40 text-primary hover:bg-primary/10"
-                  >
-                    {aiAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    Analyze with AI
                   </Button>
                 </div>
                 {!voice.supported && (
