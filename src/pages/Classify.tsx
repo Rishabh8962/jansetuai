@@ -573,6 +573,24 @@ export default function Classify() {
         )}
       </AnimatePresence>
 
+      {/* FOOTER */}
+      <footer className="relative z-10 border-t border-white/10 mt-8">
+        <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <img src={jansetuLogo} alt="JanMitra AI" className="w-8 h-8 rounded-lg" />
+            <div className="text-sm">
+              <span className="font-bold text-foreground">JanMitra</span>{' '}
+              <span className="gradient-text font-bold">AI</span>
+              <div className="text-[11px] text-muted-foreground">Smart civic governance, powered by AI</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            Made with <Heart className="w-3.5 h-3.5 text-destructive fill-destructive" /> by{' '}
+            <span className="font-semibold gradient-text">TechnoSquad</span>
+          </div>
+        </div>
+      </footer>
+
       {/* Floating JanMitra assistant */}
       <JanMitraAssistant role="citizen" onAction={(a) => { if (a === 'report_issue') openForm(); }} />
     </div>
