@@ -192,9 +192,9 @@ export default function Classify() {
           <Link to="/citizen" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5 hidden sm:inline-flex items-center">
             <History className="w-3.5 h-3.5 inline mr-1" /> My complaints
           </Link>
-          <Link to="/portals" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
+          <a href="#portals" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
             Portals
-          </Link>
+          </a>
           <Button onClick={openForm} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl">
             Report Now
           </Button>
