@@ -54,7 +54,7 @@ export function AIPerformancePanel() {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-widest text-primary font-bold">AI Performance</div>
-          <div className="text-base font-semibold">JanSetu Intelligence Engine</div>
+          <div className="text-base font-semibold">JanMitra Intelligence Engine</div>
         </div>
         <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-mono">LIVE</span>
       </div>

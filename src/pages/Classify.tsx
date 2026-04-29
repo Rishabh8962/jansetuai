@@ -111,7 +111,7 @@ export default function Classify() {
         was_correct: correct,
         reasoning: { factors: result.factors, keywords: result.keywords, adjustments: result.adjustments } as any,
       });
-      toast.success(correct ? 'Thanks! Recorded as correct.' : 'Correction saved — JanSetu AI is learning.');
+      toast.success(correct ? 'Thanks! Recorded as correct.' : 'Correction saved — JanMitra AI is learning.');
     } catch (e) { console.error(e); }
   };
 
@@ -155,9 +155,9 @@ export default function Classify() {
 
       <nav className="relative z-20 max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5">
-          <img src={jansetuLogo} alt="JanSetu AI" className="w-8 h-8 rounded-lg" />
+          <img src={jansetuLogo} alt="JanMitra AI" className="w-8 h-8 rounded-lg" />
           <span className="font-bold tracking-tight">
-            <span className="text-foreground">JanSetu</span> <span className="gradient-text">AI</span>
+            <span className="text-foreground">JanMitra</span> <span className="gradient-text">AI</span>
           </span>
         </Link>
         <div className="flex items-center gap-2">

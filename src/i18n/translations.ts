@@ -1,4 +1,4 @@
-// JanSetu AI – lightweight i18n dictionary
+// JanMitra AI – lightweight i18n dictionary
 // Keep keys flat & stable. UI strings only — categories/dynamic data stay separate.
 
 export type Lang = 'en' | 'hi';

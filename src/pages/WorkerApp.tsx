@@ -146,9 +146,9 @@ export default function WorkerApp() {
             </button>
           )}
           <div className="flex items-center gap-2">
-            <img src={jansetuLogo} alt="JanSetu AI" className="w-6 h-6 rounded" />
+            <img src={jansetuLogo} alt="JanMitra AI" className="w-6 h-6 rounded" />
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-foreground">JanSetu</span> <span className="gradient-text">AI</span> <span className="text-muted-foreground">Worker</span>
+              <span className="text-foreground">JanMitra</span> <span className="gradient-text">AI</span> <span className="text-muted-foreground">Worker</span>
             </h1>
           </div>
           <div className="flex items-center gap-2">

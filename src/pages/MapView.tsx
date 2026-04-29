@@ -129,10 +129,10 @@ export default function MapView() {
           <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <img src={jansetuLogo} alt="JanSetu AI" className="w-7 h-7 rounded" />
+          <img src={jansetuLogo} alt="JanMitra AI" className="w-7 h-7 rounded" />
           <div className="flex-1 min-w-0">
             <h1 className="text-sm font-semibold tracking-wide truncate">
-              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span>{' '}
+              <span className="text-foreground">JanMitra</span> <span className="text-primary">AI</span>{' '}
               <span className="text-muted-foreground">· Live City Map</span>
             </h1>
             <div className="text-xs text-muted-foreground">{filtered.length} of {complaints.length} complaints visible</div>
