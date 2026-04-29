@@ -292,7 +292,76 @@ export default function Classify() {
         </div>
       </section>
 
+      {/* PORTALS */}
+      <section id="portals" className="relative z-10 max-w-5xl mx-auto px-4 pb-14">
+        <div className="text-center mb-6">
+          <div className="section-title mb-1">Choose your portal</div>
+          <h2 className="text-2xl font-bold">Three apps, one platform</h2>
+          <p className="text-sm text-muted-foreground mt-2">Tailored experiences for citizens, field workers and authorities.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {[
+            {
+              id: 'citizen',
+              title: 'Citizen Portal',
+              desc: 'Snap a photo. AI detects the issue and routes it to the right department.',
+              icon: Users,
+              path: '/citizen',
+              gradient: 'from-primary to-accent',
+              tags: ['AI Vision', 'Camera', 'Tracking', 'Voice'],
+            },
+            {
+              id: 'worker',
+              title: 'Field Worker',
+              desc: 'Get assigned tasks, navigate, and upload before/after repair proof.',
+              icon: Wrench,
+              path: '/worker',
+              gradient: 'from-warning to-destructive',
+              tags: ['Task Queue', 'Navigation', 'Proof', 'AI Verify'],
+            },
+            {
+              id: 'dashboard',
+              title: 'Command Center',
+              desc: 'Real-time analytics, GIS map, AI Copilot, and approval workflow.',
+              icon: BarChart3,
+              path: '/dashboard',
+              gradient: 'from-accent to-primary',
+              tags: ['Analytics', 'GIS Map', 'Copilot', 'Trust Score'],
+            },
+          ].map((role, i) => (
+            <motion.button
+              key={role.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              onClick={() => navigate(role.path)}
+              className="glass-card glass-card-hover p-6 text-left group relative overflow-hidden"
+            >
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: 'var(--gradient-glow)' }} />
+              <div className="relative z-10">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                  <role.icon className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <h3 className="text-lg font-bold mb-1">{role.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{role.desc}</p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {role.tags.map(t => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground">{t}</span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 text-xs text-primary font-medium">
+                  Open portal <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                </div>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </section>
+
       {/* FORM (toggled) */}
+
       <AnimatePresence>
         {showForm && (
           <motion.section
