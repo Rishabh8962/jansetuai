@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain, Send, Sparkles, Image as ImageIcon, Mic, MicOff, ArrowRight, Building2,
   ShieldCheck, Lightbulb, X, History, Zap, Bot, MapPin, Activity, ChevronDown,
-  CheckCircle2, Cpu, Network, Wrench, FileSearch
+  CheckCircle2, Cpu, Network, Wrench, FileSearch, Users, BarChart3, Heart
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
