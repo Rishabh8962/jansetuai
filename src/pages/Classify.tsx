@@ -592,7 +592,7 @@ export default function Classify() {
       </footer>
 
       {/* Floating JanMitra assistant */}
-      <JanMitraAssistant role="citizen" onAction={(a) => { if (a === 'report_issue') openForm(); }} />
+      <JanMitraAssistant onAction={(a) => { if (a === 'report_issue' || a === 'start_complaint') openForm(); }} />
     </div>
   );
 }
