@@ -64,9 +64,9 @@ export default function Index() {
       {/* Top nav */}
       <nav className="relative z-20 max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={jansetuLogo} alt="JanSetu AI" className="w-9 h-9 rounded-xl" />
+          <img src={jansetuLogo} alt="JanMitra AI" className="w-9 h-9 rounded-xl" />
           <span className="font-bold text-lg tracking-tight">
-            <span className="text-foreground">JanSetu</span>{' '}
+            <span className="text-foreground">JanMitra</span>{' '}
             <span className="gradient-text">AI</span>
           </span>
         </div>

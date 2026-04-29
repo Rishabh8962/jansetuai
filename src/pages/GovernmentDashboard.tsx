@@ -104,10 +104,10 @@ export default function GovernmentDashboard() {
           <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <img src={jansetuLogo} alt="JanSetu AI" className="w-7 h-7 rounded" />
+          <img src={jansetuLogo} alt="JanMitra AI" className="w-7 h-7 rounded" />
           <div className="flex-1">
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Command Center</span>
+              <span className="text-foreground">JanMitra</span> <span className="text-primary">AI</span> <span className="text-muted-foreground">Command Center</span>
             </h1>
             <div className="text-xs text-muted-foreground">Smart City Governance Platform</div>
           </div>
@@ -457,7 +457,7 @@ function getPriorityColor(priority: string) {
 // AI Governance Copilot
 function CopilotTab() {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([
-    { role: 'ai', text: '🤖 Welcome to the **JanSetu AI Governance Copilot**. I can help you analyze complaints, department performance, worker productivity, and predict future hotspots.\n\nTry asking:\n• "Which ward has the most complaints?"\n• "Which department is slowest?"\n• "Show me today\'s summary"\n• "Predict future hotspots"' },
+    { role: 'ai', text: '🤖 Welcome to the **JanMitra AI Governance Copilot**. I can help you analyze complaints, department performance, worker productivity, and predict future hotspots.\n\nTry asking:\n• "Which ward has the most complaints?"\n• "Which department is slowest?"\n• "Show me today\'s summary"\n• "Predict future hotspots"' },
   ]);
   const [input, setInput] = useState('');
 

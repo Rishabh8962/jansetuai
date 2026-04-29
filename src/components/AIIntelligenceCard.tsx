@@ -68,7 +68,7 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
             </div>
             <div className="flex-1">
               <div className="text-sm font-bold text-primary flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> JanSetu AI is thinking…
+                <Sparkles className="w-3.5 h-3.5" /> JanMitra AI is thinking…
               </div>
               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -246,7 +246,7 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
                       {result.needsConfirmation ? '⚠️ Did we get this right?' : 'Help us improve — was this correct?'}
                     </div>
                     <div className="text-[11px] text-muted-foreground">
-                      Your feedback trains the JanSetu AI model.
+                      Your feedback trains the JanMitra AI model.
                     </div>
                   </div>
                   <Button size="sm" variant="outline" onClick={() => onConfirm(true)} className="gap-1 border-success/40 text-success hover:bg-success/10">
@@ -290,7 +290,7 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
               <Check className="w-3.5 h-3.5" />
               {confirmed === 'correct'
                 ? 'Thanks! Recorded as a correct prediction.'
-                : 'Correction saved — JanSetu AI will learn from this.'}
+                : 'Correction saved — JanMitra AI will learn from this.'}
             </motion.div>
           )}
         </motion.div>

@@ -1,4 +1,4 @@
-// Mock data generator for JanSetu AI Smart City Platform
+// Mock data generator for JanMitra AI Smart City Platform
 
 export type ComplaintCategory = 'pothole' | 'garbage' | 'streetlight' | 'water_leakage' | 'drainage' | 'road_damage' | 'sewage_overflow';
 export type ComplaintStatus = 'submitted' | 'assigned' | 'in_progress' | 'under_review' | 'rework_required' | 'completed';

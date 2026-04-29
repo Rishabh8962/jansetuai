@@ -145,7 +145,7 @@ export default function CitizenApp() {
       });
       if (!correct && correctedCategory) {
         setSelectedCategory(correctedCategory as ComplaintCategory);
-        toast.success('Correction saved — JanSetu AI is learning.');
+        toast.success('Correction saved — JanMitra AI is learning.');
       } else {
         toast.success('Thanks for confirming!');
       }
@@ -214,9 +214,9 @@ export default function CitizenApp() {
             </button>
           )}
           <div className="flex items-center gap-2">
-            <img src={jansetuLogo} alt="JanSetu AI" className="w-6 h-6 rounded" />
+            <img src={jansetuLogo} alt="JanMitra AI" className="w-6 h-6 rounded" />
             <h1 className="text-sm font-semibold tracking-wide">
-              <span className="text-foreground">JanSetu</span> <span className="text-primary">AI</span>
+              <span className="text-foreground">JanMitra</span> <span className="text-primary">AI</span>
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function CitizenApp() {
           {view === 'home' && (
             <motion.div key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div className="text-center py-6">
-                <img src={jansetuLogo} alt="JanSetu AI" className="w-16 h-16 mx-auto mb-4 rounded-2xl" />
+                <img src={jansetuLogo} alt="JanMitra AI" className="w-16 h-16 mx-auto mb-4 rounded-2xl" />
                 <h2 className="text-2xl font-bold mb-1">{t('app.report_track', 'Report & Track')}</h2>
                 <p className="text-sm text-muted-foreground">{t('app.tagline', 'Civic issues in your neighborhood')}</p>
               </div>
