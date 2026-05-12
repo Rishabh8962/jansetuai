@@ -216,6 +216,48 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          email: string
+          id: string
+          issue_id: string | null
+          message: string
+          name: string
+          rating: number
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          issue_id?: string | null
+          message: string
+          name: string
+          rating: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          issue_id?: string | null
+          message?: string
+          name?: string
+          rating?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           audience: string

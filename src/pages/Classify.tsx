@@ -18,6 +18,7 @@ import jansetuLogo from '@/assets/jansetu-logo.png';
 import { addComplaint, getComplaints } from '@/data/store';
 import type { Complaint } from '@/data/mockData';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
+import FeedbackForm from '@/components/FeedbackForm';
 
 const HINT_RULES: { match: RegExp; label: string; tone: 'info' | 'warn' | 'ai' }[] = [
   { match: /\b(garbage|trash|waste|bin|dump|litter)\b/i, label: 'Looks like a Sanitation issue', tone: 'ai' },
@@ -204,6 +205,23 @@ export default function Classify() {
       {/* HERO */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 pt-10 pb-12 text-center">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          {/* Animated logo */}
+          <motion.div
+            className="relative w-24 h-24 mx-auto mb-6"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/40 via-accent/30 to-primary/40 blur-2xl animate-pulse" />
+            <div className="relative w-full h-full rounded-3xl glass-card flex items-center justify-center border border-primary/30 shadow-[0_0_40px_-8px_hsl(var(--primary)/0.6)]">
+              <img src={jansetuLogo} alt="JanMitra AI logo" className="w-14 h-14 rounded-2xl" />
+            </div>
+            <motion.div
+              className="absolute -inset-2 rounded-3xl border border-primary/20"
+              animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0, 0.6] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
+            />
+          </motion.div>
+
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card text-xs text-muted-foreground mb-5">
             <Sparkles className="w-3 h-3 text-accent" /> AI-powered grievance classification system
           </div>
@@ -572,6 +590,16 @@ export default function Classify() {
           </motion.section>
         )}
       </AnimatePresence>
+
+      {/* FEEDBACK */}
+      <section id="feedback" className="relative z-10 max-w-3xl mx-auto px-4 pb-14">
+        <div className="text-center mb-6">
+          <div className="section-title mb-1">We listen</div>
+          <h2 className="text-2xl font-bold">Help us improve JanMitra AI</h2>
+          <p className="text-sm text-muted-foreground mt-2">Your feedback reaches the Command Center directly.</p>
+        </div>
+        <FeedbackForm />
+      </section>
 
       {/* FOOTER */}
       <footer className="relative z-10 border-t border-white/10 mt-8">
