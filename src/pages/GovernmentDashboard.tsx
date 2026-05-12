@@ -6,7 +6,7 @@ import { CATEGORY_LABELS, getCategoryIcon, type Complaint } from '@/data/mockDat
 import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getAllReviews, askAICopilot } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
-import CityMap from '@/components/CityMap';
+import CityMap from '@/components/GoogleCityMap';
 import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
