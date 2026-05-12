@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { APIProvider, Map, AdvancedMarker, InfoWindow, Pin } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, Marker, InfoWindow } from '@vis.gl/react-google-maps';
 import { type Complaint, getCategoryIcon, CATEGORY_LABELS } from '@/data/mockData';
 import { GOOGLE_MAPS_API_KEY, BHOPAL_CENTER, DEFAULT_ZOOM, DARK_MAP_STYLE } from '@/lib/mapsConfig';
 
@@ -61,7 +61,6 @@ export default function GoogleCityMap({
       >
         <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
           <Map
-            mapId="janmitra_dark"
             defaultCenter={center}
             defaultZoom={zoom}
             gestureHandling="greedy"
@@ -70,17 +69,19 @@ export default function GoogleCityMap({
             className="w-full h-full"
           >
             {markers.map((c) => (
-              <AdvancedMarker
+              <Marker
                 key={c.id}
                 position={{ lat: Number(c.lat), lng: Number(c.lng) }}
                 onClick={() => setSelected(c)}
-              >
-                <Pin
-                  background={PRIORITY_COLOR[c.priority] ?? '#06b6d4'}
-                  borderColor="#0f172a"
-                  glyphColor="#ffffff"
-                />
-              </AdvancedMarker>
+                icon={{
+                  path: 0, // google.maps.SymbolPath.CIRCLE
+                  scale: c.priority === 'critical' ? 9 : c.priority === 'high' ? 8 : 6,
+                  fillColor: PRIORITY_COLOR[c.priority] ?? '#06b6d4',
+                  fillOpacity: c.status === 'completed' ? 0.45 : 0.95,
+                  strokeColor: '#ffffff',
+                  strokeWeight: 1.5,
+                } as any}
+              />
             ))}
 
             {selected && (
