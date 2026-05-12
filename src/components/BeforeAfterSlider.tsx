@@ -182,10 +182,13 @@ export default function BeforeAfterSlider({
           <ArrowLeftRight className="w-4 h-4 text-primary" />
         </div>
       </div>
-      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-        <span>← Drag the slider to compare →</span>
-        <span className="font-mono">{Math.round(position)}%</span>
-      </div>
+      )}
+      {mode === 'slider' && (
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <span>← Drag the slider to compare →</span>
+          <span className="font-mono">{Math.round(position)}%</span>
+        </div>
+      )}
     </div>
   );
 }
