@@ -7,7 +7,7 @@ export const BHOPAL_CENTER = { lat: 23.2599, lng: 77.4126 };
 export const DEFAULT_ZOOM = 12;
 
 // Dark futuristic Google Map style matching JanMitra UI
-export const DARK_MAP_STYLE: google.maps.MapTypeStyle[] = [
+export const DARK_MAP_STYLE: any[] = [
   { elementType: 'geometry', stylers: [{ color: '#0f172a' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
