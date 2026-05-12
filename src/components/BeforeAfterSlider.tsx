@@ -22,6 +22,21 @@ export default function BeforeAfterSlider({
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [mode, setMode] = useState<'slider' | 'side'>('slider');
+
+  const download = async (url: string, name: string) => {
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      const blob = await res.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch {
+      window.open(url, '_blank');
+    }
+  };
 
   const updateFromClientX = useCallback((clientX: number) => {
     const el = containerRef.current;
@@ -52,6 +67,56 @@ export default function BeforeAfterSlider({
 
   return (
     <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 text-[11px]">
+          <button
+            onClick={() => setMode('slider')}
+            className={`px-2 py-1 rounded-md flex items-center gap-1 ${mode === 'slider' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <ArrowLeftRight className="w-3 h-3" /> Slider
+          </button>
+          <button
+            onClick={() => setMode('side')}
+            className={`px-2 py-1 rounded-md flex items-center gap-1 ${mode === 'side' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Columns2 className="w-3 h-3" /> Side-by-side
+          </button>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => download(beforeUrl, 'before.jpg')}
+            className="px-2 py-1 rounded-md text-[11px] flex items-center gap-1 text-muted-foreground hover:text-foreground"
+            title="Download before"
+          >
+            <Download className="w-3 h-3" /> Before
+          </button>
+          <button
+            onClick={() => download(afterUrl, 'after.jpg')}
+            className="px-2 py-1 rounded-md text-[11px] flex items-center gap-1 text-muted-foreground hover:text-foreground"
+            title="Download after"
+          >
+            <Download className="w-3 h-3" /> After
+          </button>
+        </div>
+      </div>
+
+      {mode === 'side' ? (
+        <div className="grid grid-cols-2 gap-2" style={{ height }}>
+          <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black">
+            <img src={beforeUrl} alt={beforeLabel} className="w-full h-full object-cover" />
+            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur text-[10px] font-semibold tracking-wide text-white uppercase">{beforeLabel}</div>
+          </div>
+          <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black">
+            <img src={afterUrl} alt={afterLabel} className="w-full h-full object-cover" />
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur text-[10px] font-semibold tracking-wide text-white uppercase">{afterLabel}</div>
+            {improvementPct !== undefined && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-success/90 text-success-foreground text-[11px] font-bold shadow-lg">
+                Damage reduced by {improvementPct}%
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
       <div
         ref={containerRef}
         className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-black select-none cursor-ew-resize"
