@@ -611,7 +611,7 @@ export function JanMitraAssistant({ role: roleProp, context, onAction }: Props) 
                           : lang === 'hi' ? 'अपना सवाल लिखें…' : 'Ask JanMitra anything…'
                       }
                       rows={1}
-                      className="min-h-[42px] max-h-28 resize-none bg-white border-indigo-200 focus-visible:ring-indigo-400"
+                      className="min-h-[42px] max-h-28 resize-none bg-white text-slate-900 placeholder:text-slate-400 border-indigo-200 focus-visible:ring-indigo-400"
                     />
                     {voiceSupported && (
                       <Button
