@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, Download, Columns2 } from 'lucide-react';
 
 interface BeforeAfterSliderProps {
   beforeUrl: string;
