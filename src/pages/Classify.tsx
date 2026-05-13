@@ -400,6 +400,33 @@ export default function Classify() {
               <h2 className="text-2xl font-bold">Describe it. <span className="gradient-text">AI does the rest.</span></h2>
             </div>
 
+            {/* Step indicator */}
+            <div className="glass-card p-3 mb-5 flex items-center justify-between gap-1 overflow-x-auto">
+              {STEPS.map((s, i) => {
+                const done = i < stepIdx;
+                const active = i === stepIdx;
+                return (
+                  <div key={s} className="flex items-center gap-2 shrink-0">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition ${
+                        done
+                          ? 'bg-india-green text-india-green-foreground'
+                          : active
+                          ? 'bg-saffron text-saffron-foreground shadow-civic'
+                          : 'bg-secondary text-muted-foreground border border-border'
+                      }`}
+                    >
+                      {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
+                    </div>
+                    <span className={`text-[11px] font-medium ${active ? 'text-foreground' : 'text-muted-foreground'} hidden sm:inline`}>
+                      {s}
+                    </span>
+                    {i < STEPS.length - 1 && <span className="w-4 h-px bg-border" />}
+                  </div>
+                );
+              })}
+            </div>
+
             <motion.div
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               className="glass-card p-4 md:p-5 border-primary/30 relative"
