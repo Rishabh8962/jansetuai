@@ -19,6 +19,7 @@ import { addComplaint, getComplaints } from '@/data/store';
 import type { Complaint } from '@/data/mockData';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
 import FeedbackForm from '@/components/FeedbackForm';
+import LocationPicker, { type PickedLocation } from '@/components/LocationPicker';
 
 const HINT_RULES: { match: RegExp; label: string; tone: 'info' | 'warn' | 'ai' }[] = [
   { match: /\b(garbage|trash|waste|bin|dump|litter)\b/i, label: 'Looks like a Sanitation issue', tone: 'ai' },
@@ -63,6 +64,7 @@ export default function Classify() {
   const [feedback, setFeedback] = useState<'correct' | 'corrected' | null>(null);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [location, setLocation] = useState<PickedLocation | null>(null);
 
   const voice = useVoiceInput({ onResult: (t) => setText((prev) => (prev ? prev + ' ' : '') + t) });
 
@@ -152,10 +154,10 @@ export default function Classify() {
       : result.severity === 'low' ? 'low' : 'medium';
     const newC: Complaint = {
       id, userId: 'USR-SELF', citizenName: 'You', category,
-      description: text || result.description,
+      description: location?.address ? `${text || result.description}\n📍 ${location.address}` : (text || result.description),
       imageUrl: imageUrl || '/placeholder.svg',
-      lat: 12.9716 + (Math.random() - 0.5) * 0.1,
-      lng: 77.5946 + (Math.random() - 0.5) * 0.1,
+      lat: location?.lat ?? 23.2599 + (Math.random() - 0.5) * 0.05,
+      lng: location?.lng ?? 77.4126 + (Math.random() - 0.5) * 0.05,
       ward: 'Ward 3', status: 'submitted', priority: priority as any,
       department: CATEGORY_DEPARTMENTS[category] || result.department,
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
@@ -168,8 +170,12 @@ export default function Classify() {
 
   const reset = () => {
     setText(''); setImageUrl(null); setResult(null); setFeedback(null);
-    setSubmittedId(null); setShowImage(false);
+    setSubmittedId(null); setShowImage(false); setLocation(null);
   };
+
+  // Step progress
+  const stepIdx = submittedId ? 4 : result ? (location ? 3 : 2) : (text || imageUrl ? 1 : 0);
+  const STEPS = ['Upload', 'AI Analysis', 'Location', 'Details', 'Submit'];
 
   return (
     <div className="min-h-screen bg-background cyber-grid relative overflow-hidden">
