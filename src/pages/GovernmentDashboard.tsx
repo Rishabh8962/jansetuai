@@ -433,7 +433,7 @@ export default function GovernmentDashboard() {
 
         {tab === 'map' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <CityMap complaints={complaints} />
+            <CityMap complaints={complaints} height="600px" colorBy="status" />
           </motion.div>
         )}
 
