@@ -125,22 +125,22 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
           )}
 
           {/* Hero AI result card */}
-          <div className="glass-card p-5 border-primary/40 relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 blur-3xl pointer-events-none" />
+          <div className="glass-card p-5 border-saffron/40 relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br from-saffron/30 to-india-green/20 blur-3xl pointer-events-none" />
 
-            <div className="relative flex items-start gap-3">
+            <div className="relative flex items-start gap-4">
               <motion.div
-                initial={{ rotate: -20, scale: 0.7 }}
-                animate={{ rotate: 0, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 260 }}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center ring-2 ring-primary/40 shrink-0"
+                initial={{ rotate: -10, scale: 0.7, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+                className="shrink-0"
               >
-                <Brain className="w-6 h-6 text-primary-foreground" />
+                <AIIssueIcon category={result.category as string} size={72} />
               </motion.div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-widest text-primary/80 font-semibold">AI Classification</div>
+                <div className="text-[10px] uppercase tracking-widest text-saffron font-semibold">AI Detected</div>
                 <div className="text-2xl font-bold text-foreground leading-tight truncate">
-                  {getCategoryIcon(result.category as ComplaintCategory)} {CATEGORY_LABELS[result.category as ComplaintCategory] || result.category}
+                  {CATEGORY_LABELS[result.category as ComplaintCategory] || result.category}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5 italic line-clamp-2">"{result.title}"</div>
               </div>
