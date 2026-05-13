@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CATEGORIES, CATEGORY_LABELS, getCategoryIcon, type ComplaintCategory } from '@/data/mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
+import AIIssueIcon from './AIIssueIcon';
 
 export interface AIIntelResult {
   category: ComplaintCategory | string;
@@ -57,18 +58,22 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
           initial={{ opacity: 0, y: 8, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8 }}
-          className="glass-card p-5 border-primary/40 relative overflow-hidden"
+          className="glass-card p-5 border-saffron/40 relative overflow-hidden"
         >
           <div className="absolute inset-0 opacity-30 pointer-events-none">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-2xl animate-pulse" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-saffron/20 via-primary/20 to-india-green/20 blur-2xl animate-pulse" />
+          </div>
+          {/* AI scan sweep */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-x-0 h-12 bg-gradient-to-b from-transparent via-saffron/30 to-transparent animate-ai-scan" />
           </div>
           <div className="relative flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center ring-2 ring-primary/40 animate-pulse">
-              <Brain className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 rounded-2xl bg-saffron/20 flex items-center justify-center ring-2 ring-saffron/40 animate-pulse">
+              <Brain className="w-6 h-6 text-saffron" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold text-primary flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> JanMitra AI is thinking…
+              <div className="text-sm font-bold text-saffron flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> AI Analysis in progress…
               </div>
               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                 <Loader2 className="w-3 h-3 animate-spin" />
