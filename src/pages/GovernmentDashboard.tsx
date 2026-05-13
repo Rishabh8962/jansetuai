@@ -146,6 +146,37 @@ export default function GovernmentDashboard() {
       <div className="p-4 max-w-7xl mx-auto">
         {tab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            {/* Priority alerts strip — critical complaints */}
+            {(() => {
+              const critical = complaints.filter(c => c.priority === 'critical' && c.status !== 'completed').slice(0, 6);
+              if (critical.length === 0) return null;
+              return (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                  className="glass-card p-3 border-destructive/40">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-destructive animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-destructive">
+                      {critical.length} Priority Alert{critical.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {critical.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => setTab('map')}
+                        className="shrink-0 glass-card px-3 py-2 border-destructive/30 hover:border-destructive/60 text-left min-w-[200px]"
+                      >
+                        <div className="text-xs font-semibold truncate">
+                          {getCategoryIcon(c.category)} {CATEGORY_LABELS[c.category]}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate">{c.ward} · {c.id}</div>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              );
+            })()}
+
             {reviewQueue.length > 0 && (
               <motion.button initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                 onClick={() => setTab('review')}
@@ -157,6 +188,20 @@ export default function GovernmentDashboard() {
                 </div>
               </motion.button>
             )}
+
+            {/* Live city map */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-saffron" />
+                  <span className="text-sm font-semibold">Live Complaint Map · Bhopal</span>
+                </div>
+                <button onClick={() => setTab('map')} className="text-[11px] text-saffron hover:underline">
+                  Open full map →
+                </button>
+              </div>
+              <CityMap complaints={complaints} height="320px" colorBy="status" />
+            </motion.div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
