@@ -20,6 +20,7 @@ export default function MapView() {
   useStoreRefresh();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterId>('all');
+  const [colorBy, setColorBy] = useState<'priority' | 'status'>('status');
   const complaints = getComplaints();
 
   const filtered = useMemo(() => {
@@ -71,11 +72,22 @@ export default function MapView() {
               {f.label}
             </button>
           ))}
+          <div className="ml-auto flex items-center gap-1 text-[11px] text-muted-foreground">
+            Color by:
+            <button
+              onClick={() => setColorBy('status')}
+              className={`px-2 py-0.5 rounded ${colorBy === 'status' ? 'bg-india-green/20 text-india-green' : 'hover:text-foreground'}`}
+            >Status</button>
+            <button
+              onClick={() => setColorBy('priority')}
+              className={`px-2 py-0.5 rounded ${colorBy === 'priority' ? 'bg-saffron/20 text-saffron' : 'hover:text-foreground'}`}
+            >Priority</button>
+          </div>
         </div>
       </div>
 
       <div className="flex-1 p-4 overflow-hidden">
-        <GoogleCityMap complaints={filtered} height="100%" />
+        <GoogleCityMap complaints={filtered} height="100%" colorBy={colorBy} />
       </div>
     </div>
   );

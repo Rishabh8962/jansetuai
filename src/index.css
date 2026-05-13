@@ -70,6 +70,18 @@
     --shadow-glow: 0 0 40px -8px hsl(244 75% 59% / 0.45);
     --shadow-card: 0 8px 32px -12px hsl(222 50% 2% / 0.6);
     --shadow-soft: 0 4px 16px -4px hsl(222 50% 2% / 0.4);
+
+    /* Indian civic-tech tricolor tokens */
+    --saffron: 28 100% 60%;
+    --saffron-foreground: 222 38% 8%;
+    --india-green: 120 88% 28%;
+    --india-green-foreground: 210 40% 98%;
+    --navy: 240 100% 25%;
+    --navy-foreground: 210 40% 98%;
+
+    --gradient-civic: linear-gradient(135deg, hsl(var(--saffron) / 0.18), hsl(0 0% 100% / 0.04) 50%, hsl(var(--india-green) / 0.18));
+    --shadow-civic: 0 12px 40px -16px hsl(var(--saffron) / 0.45);
+    --shadow-float: 0 18px 50px -20px hsl(222 50% 2% / 0.7);
   }
 }
 

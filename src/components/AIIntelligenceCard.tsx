@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CATEGORIES, CATEGORY_LABELS, getCategoryIcon, type ComplaintCategory } from '@/data/mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
+import AIIssueIcon from './AIIssueIcon';
 
 export interface AIIntelResult {
   category: ComplaintCategory | string;
@@ -57,18 +58,22 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
           initial={{ opacity: 0, y: 8, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8 }}
-          className="glass-card p-5 border-primary/40 relative overflow-hidden"
+          className="glass-card p-5 border-saffron/40 relative overflow-hidden"
         >
           <div className="absolute inset-0 opacity-30 pointer-events-none">
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-2xl animate-pulse" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-saffron/20 via-primary/20 to-india-green/20 blur-2xl animate-pulse" />
+          </div>
+          {/* AI scan sweep */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-x-0 h-12 bg-gradient-to-b from-transparent via-saffron/30 to-transparent animate-ai-scan" />
           </div>
           <div className="relative flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center ring-2 ring-primary/40 animate-pulse">
-              <Brain className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 rounded-2xl bg-saffron/20 flex items-center justify-center ring-2 ring-saffron/40 animate-pulse">
+              <Brain className="w-6 h-6 text-saffron" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold text-primary flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> JanMitra AI is thinking…
+              <div className="text-sm font-bold text-saffron flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> AI Analysis in progress…
               </div>
               <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -120,22 +125,22 @@ export function AIIntelligenceCard({ loading, result, onConfirm, confirmed }: Pr
           )}
 
           {/* Hero AI result card */}
-          <div className="glass-card p-5 border-primary/40 relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 blur-3xl pointer-events-none" />
+          <div className="glass-card p-5 border-saffron/40 relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br from-saffron/30 to-india-green/20 blur-3xl pointer-events-none" />
 
-            <div className="relative flex items-start gap-3">
+            <div className="relative flex items-start gap-4">
               <motion.div
-                initial={{ rotate: -20, scale: 0.7 }}
-                animate={{ rotate: 0, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 260 }}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center ring-2 ring-primary/40 shrink-0"
+                initial={{ rotate: -10, scale: 0.7, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 240, damping: 18 }}
+                className="shrink-0"
               >
-                <Brain className="w-6 h-6 text-primary-foreground" />
+                <AIIssueIcon category={result.category as string} size={72} />
               </motion.div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-widest text-primary/80 font-semibold">AI Classification</div>
+                <div className="text-[10px] uppercase tracking-widest text-saffron font-semibold">AI Detected</div>
                 <div className="text-2xl font-bold text-foreground leading-tight truncate">
-                  {getCategoryIcon(result.category as ComplaintCategory)} {CATEGORY_LABELS[result.category as ComplaintCategory] || result.category}
+                  {CATEGORY_LABELS[result.category as ComplaintCategory] || result.category}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5 italic line-clamp-2">"{result.title}"</div>
               </div>

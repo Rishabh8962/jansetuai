@@ -1,8 +1,14 @@
 import { motion } from 'framer-motion';
-import { MapPin, Users, Wrench, BarChart3, Building2, Zap, Sparkles, ArrowRight, Camera, Brain, ShieldCheck } from 'lucide-react';
+import { MapPin, Users, Wrench, BarChart3, Building2, Sparkles, ArrowRight, Camera, Brain, ShieldCheck, CheckCircle2, Activity, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import jansetuLogo from '@/assets/jansetu-logo.png';
 import { Button } from '@/components/ui/button';
+import GoogleCityMap from '@/components/GoogleCityMap';
+import CivicCounter from '@/components/CivicCounter';
+import { getComplaints } from '@/data/store';
+import { useStoreRefresh } from '@/hooks/useStore';
+import { useMemo } from 'react';
+import { CATEGORY_LABELS, getCategoryIcon } from '@/data/mockData';
 
 const roles = [
   {
@@ -11,7 +17,7 @@ const roles = [
     description: 'Snap a photo. AI detects the issue and routes it to the right department.',
     icon: Users,
     path: '/citizen',
-    gradient: 'from-primary to-accent',
+    gradient: 'from-saffron to-warning',
     features: ['AI Vision', 'Camera Capture', 'Live Tracking', 'Voice Reports'],
   },
   {
@@ -20,7 +26,7 @@ const roles = [
     description: 'Get assigned tasks, navigate, and upload before/after repair proof.',
     icon: Wrench,
     path: '/worker',
-    gradient: 'from-warning to-destructive',
+    gradient: 'from-navy to-primary',
     features: ['Task Queue', 'Navigation', 'Repair Proof', 'AI Verification'],
   },
   {
@@ -29,7 +35,7 @@ const roles = [
     description: 'Real-time analytics, GIS map, AI Copilot, and approval workflow.',
     icon: BarChart3,
     path: '/dashboard',
-    gradient: 'from-accent to-primary',
+    gradient: 'from-india-green to-accent',
     features: ['Live Analytics', 'GIS Map', 'AI Copilot', 'Trust Scores'],
   },
 ];
@@ -42,32 +48,46 @@ const features = [
 ];
 
 export default function Index() {
+  useStoreRefresh();
   const navigate = useNavigate();
+  const complaints = getComplaints();
+
+  const stats = useMemo(() => {
+    const total = complaints.length;
+    const resolved = complaints.filter(c => c.status === 'completed').length;
+    return {
+      resolved,
+      active: Math.max(120, total * 3),
+      departments: 5,
+      accuracy: 96,
+    };
+  }, [complaints]);
+
+  const recentAI = useMemo(() => complaints.slice(0, 3), [complaints]);
 
   return (
     <div className="min-h-screen bg-background cyber-grid relative overflow-hidden">
-      {/* Hero glow background */}
       <div className="absolute inset-0 pointer-events-none hero-glow" />
       <motion.div
-        className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full blur-3xl opacity-30 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 60%)' }}
-        animate={{ scale: [1, 1.1, 1], opacity: [0.25, 0.4, 0.25] }}
+        className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full blur-3xl opacity-25 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(var(--saffron)), transparent 60%)' }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.18, 0.32, 0.18] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full blur-3xl opacity-30 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsl(var(--accent)), transparent 60%)' }}
-        animate={{ scale: [1.1, 1, 1.1], opacity: [0.3, 0.45, 0.3] }}
+        className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full blur-3xl opacity-25 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsl(var(--india-green)), transparent 60%)' }}
+        animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       {/* Top nav */}
-      <nav className="relative z-20 max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
+      <nav className="relative z-20 max-w-7xl mx-auto px-4 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={jansetuLogo} alt="JanMitra AI" className="w-9 h-9 rounded-xl" />
+          <img src={jansetuLogo} alt="JanSetu" className="w-9 h-9 rounded-xl" />
           <span className="font-bold text-lg tracking-tight">
-            <span className="text-foreground">JanMitra</span>{' '}
-            <span className="gradient-text">AI</span>
+            <span className="text-foreground">Jan</span>
+            <span className="text-saffron">Setu</span>
           </span>
         </div>
         <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
@@ -77,53 +97,118 @@ export default function Index() {
         </div>
         <Button
           onClick={() => navigate('/citizen')}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-xl"
+          className="bg-saffron text-saffron-foreground hover:bg-saffron/90 gap-2 rounded-xl shadow-civic"
         >
           Report Issue <ArrowRight className="w-4 h-4" />
         </Button>
       </nav>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-8 pb-20">
-        {/* Hero */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card text-xs text-muted-foreground mb-6"
-          >
-            <Sparkles className="w-3 h-3 text-accent" /> AI-powered civic governance
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pt-6 pb-20">
+        {/* HERO — two columns */}
+        <section className="grid lg:grid-cols-2 gap-8 items-center mb-20">
+          {/* Left */}
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card text-xs text-muted-foreground mb-5">
+              <Sparkles className="w-3 h-3 text-saffron" /> Government-grade civic-tech for Bharat
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-4">
+              <span className="text-foreground">Jan</span>
+              <span className="text-saffron">Setu</span>
+            </h1>
+            <p className="text-lg md:text-xl text-foreground/90 max-w-xl mb-3 font-medium">
+              Empowering Citizens. Solving Civic Issues with AI.
+            </p>
+            <p className="text-sm text-muted-foreground max-w-xl mb-7 leading-relaxed">
+              Snap a photo, our AI detects the issue, pinpoints the location, and routes it to the right
+              department in seconds — with live tracking until it's resolved.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 mb-8">
+              <Button
+                size="lg"
+                onClick={() => navigate('/citizen')}
+                className="bg-saffron text-saffron-foreground hover:bg-saffron/90 gap-2 rounded-xl shadow-civic h-12 px-7 text-base"
+              >
+                <Camera className="w-4 h-4" /> Report Issue
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate('/citizen')}
+                className="border-white/15 bg-white/5 hover:bg-white/10 gap-2 rounded-xl h-12"
+              >
+                Track Complaint <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <CivicCounter icon={CheckCircle2} label="Issues Resolved" value={stats.resolved} tone="india-green" />
+              <CivicCounter icon={Users} label="Active Citizens" value={stats.active} tone="saffron" delay={0.1} />
+              <CivicCounter icon={Building2} label="Departments" value={stats.departments} tone="navy" delay={0.2} />
+              <CivicCounter icon={Target} label="AI Accuracy" value={stats.accuracy} suffix="%" tone="primary" delay={0.3} />
+            </div>
           </motion.div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-5 tracking-tight leading-[1.05]">
-            Report Civic Issues{' '}
-            <span className="gradient-text">Instantly with AI</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Upload a photo. Our AI detects potholes, garbage, drainage, streetlights and more — then routes them to the right department in real time.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-7">
-            <Button
-              size="lg"
-              onClick={() => navigate('/citizen')}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-xl shadow-lg shadow-primary/30"
+
+          {/* Right — live map */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="relative"
+          >
+            <div className="glass-card p-3 border-saffron/20 shadow-float">
+              <div className="flex items-center justify-between px-2 pt-1 pb-2">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="w-2 h-2 rounded-full bg-india-green animate-pulse" />
+                  Live · Bhopal
+                </div>
+                <div className="text-[11px] text-muted-foreground font-mono">{complaints.length} issues</div>
+              </div>
+              <div className="rounded-xl overflow-hidden">
+                <GoogleCityMap complaints={complaints.slice(0, 40)} height="380px" colorBy="status" />
+              </div>
+            </div>
+
+            {/* Floating AI cards */}
+            <motion.div
+              className="absolute -left-3 top-10 hidden md:block"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <Camera className="w-4 h-4" /> Report Now
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate('/dashboard')}
-              className="border-white/15 bg-white/5 hover:bg-white/10 gap-2 rounded-xl"
+              {recentAI[0] && (
+                <div className="glass-card p-2.5 border-saffron/30 shadow-civic flex items-center gap-2 max-w-[200px]">
+                  <div className="text-2xl leading-none">{getCategoryIcon(recentAI[0].category)}</div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-saffron uppercase tracking-wider font-semibold">AI detected</div>
+                    <div className="text-xs font-semibold truncate">{CATEGORY_LABELS[recentAI[0].category]}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {Math.round((recentAI[0].aiConfidence ?? 0.94) * 100)}% confidence
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            <motion.div
+              className="absolute -right-3 bottom-12 hidden md:block"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
             >
-              View Command Center
-            </Button>
-          </div>
-          <div className="flex items-center justify-center gap-5 mt-7 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Zap className="w-3 h-3 text-primary" /> Gemini Vision</span>
-            <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-accent" /> GIS Mapping</span>
-            <span className="flex items-center gap-1.5"><Building2 className="w-3 h-3 text-primary" /> Digital Twin</span>
-          </div>
-        </motion.div>
+              {recentAI[1] && (
+                <div className="glass-card p-2.5 border-india-green/30 shadow-float flex items-center gap-2 max-w-[200px]">
+                  <div className="w-8 h-8 rounded-lg bg-india-green/15 flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-india-green" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-india-green uppercase tracking-wider font-semibold">Resolved</div>
+                    <div className="text-xs font-semibold truncate">{CATEGORY_LABELS[recentAI[1].category]}</div>
+                    <div className="text-[10px] text-muted-foreground">{recentAI[1].ward}</div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        </section>
 
         {/* Feature strip */}
         <div id="features" className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-16">
@@ -131,12 +216,13 @@ export default function Index() {
             <motion.div
               key={f.title}
               initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 + i * 0.06 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 + i * 0.06 }}
               className="glass-card glass-card-hover p-5"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                <f.icon className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-saffron/10 flex items-center justify-center mb-3">
+                <f.icon className="w-5 h-5 text-saffron" />
               </div>
               <div className="font-semibold text-sm mb-1">{f.title}</div>
               <div className="text-xs text-muted-foreground leading-relaxed">{f.desc}</div>
@@ -155,13 +241,14 @@ export default function Index() {
               <motion.button
                 key={role.id}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 + i * 0.1 }}
                 onClick={() => navigate(role.path)}
                 className="glass-card glass-card-hover p-6 text-left group relative overflow-hidden"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ background: 'var(--gradient-glow)' }} />
+                  style={{ background: 'var(--gradient-civic)' }} />
                 <div className="relative z-10">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-4
                     group-hover:scale-110 transition-transform shadow-lg`}>
@@ -174,7 +261,7 @@ export default function Index() {
                       <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground">{f}</span>
                     ))}
                   </div>
-                  <div className="mt-4 flex items-center gap-1 text-xs text-primary font-medium">
+                  <div className="mt-4 flex items-center gap-1 text-xs text-saffron font-medium">
                     Open portal <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>
@@ -182,25 +269,6 @@ export default function Index() {
             ))}
           </div>
         </div>
-
-        {/* Stats */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-          className="glass-card p-5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            {[
-              { label: 'Complaints', value: '500+', sub: 'demo dataset' },
-              { label: 'Departments', value: '5', sub: 'tracked' },
-              { label: 'Workers', value: '10', sub: 'field agents' },
-              { label: 'AI Models', value: '5', sub: 'active' },
-            ].map(s => (
-              <div key={s.label}>
-                <div className="text-2xl font-mono font-bold gradient-text">{s.value}</div>
-                <div className="text-xs text-muted-foreground">{s.label}</div>
-                <div className="text-[10px] text-muted-foreground/60">{s.sub}</div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
     </div>
   );

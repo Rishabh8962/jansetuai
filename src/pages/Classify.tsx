@@ -19,6 +19,7 @@ import { addComplaint, getComplaints } from '@/data/store';
 import type { Complaint } from '@/data/mockData';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
 import FeedbackForm from '@/components/FeedbackForm';
+import LocationPicker, { type PickedLocation } from '@/components/LocationPicker';
 
 const HINT_RULES: { match: RegExp; label: string; tone: 'info' | 'warn' | 'ai' }[] = [
   { match: /\b(garbage|trash|waste|bin|dump|litter)\b/i, label: 'Looks like a Sanitation issue', tone: 'ai' },
@@ -63,6 +64,7 @@ export default function Classify() {
   const [feedback, setFeedback] = useState<'correct' | 'corrected' | null>(null);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [location, setLocation] = useState<PickedLocation | null>(null);
 
   const voice = useVoiceInput({ onResult: (t) => setText((prev) => (prev ? prev + ' ' : '') + t) });
 
@@ -152,10 +154,10 @@ export default function Classify() {
       : result.severity === 'low' ? 'low' : 'medium';
     const newC: Complaint = {
       id, userId: 'USR-SELF', citizenName: 'You', category,
-      description: text || result.description,
+      description: location?.address ? `${text || result.description}\n📍 ${location.address}` : (text || result.description),
       imageUrl: imageUrl || '/placeholder.svg',
-      lat: 12.9716 + (Math.random() - 0.5) * 0.1,
-      lng: 77.5946 + (Math.random() - 0.5) * 0.1,
+      lat: location?.lat ?? 23.2599 + (Math.random() - 0.5) * 0.05,
+      lng: location?.lng ?? 77.4126 + (Math.random() - 0.5) * 0.05,
       ward: 'Ward 3', status: 'submitted', priority: priority as any,
       department: CATEGORY_DEPARTMENTS[category] || result.department,
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
@@ -168,8 +170,12 @@ export default function Classify() {
 
   const reset = () => {
     setText(''); setImageUrl(null); setResult(null); setFeedback(null);
-    setSubmittedId(null); setShowImage(false);
+    setSubmittedId(null); setShowImage(false); setLocation(null);
   };
+
+  // Step progress
+  const stepIdx = submittedId ? 4 : result ? (location ? 3 : 2) : (text || imageUrl ? 1 : 0);
+  const STEPS = ['Upload', 'AI Analysis', 'Location', 'Details', 'Submit'];
 
   return (
     <div className="min-h-screen bg-background cyber-grid relative overflow-hidden">
@@ -394,6 +400,33 @@ export default function Classify() {
               <h2 className="text-2xl font-bold">Describe it. <span className="gradient-text">AI does the rest.</span></h2>
             </div>
 
+            {/* Step indicator */}
+            <div className="glass-card p-3 mb-5 flex items-center justify-between gap-1 overflow-x-auto">
+              {STEPS.map((s, i) => {
+                const done = i < stepIdx;
+                const active = i === stepIdx;
+                return (
+                  <div key={s} className="flex items-center gap-2 shrink-0">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold transition ${
+                        done
+                          ? 'bg-india-green text-india-green-foreground'
+                          : active
+                          ? 'bg-saffron text-saffron-foreground shadow-civic'
+                          : 'bg-secondary text-muted-foreground border border-border'
+                      }`}
+                    >
+                      {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
+                    </div>
+                    <span className={`text-[11px] font-medium ${active ? 'text-foreground' : 'text-muted-foreground'} hidden sm:inline`}>
+                      {s}
+                    </span>
+                    {i < STEPS.length - 1 && <span className="w-4 h-px bg-border" />}
+                  </div>
+                );
+              })}
+            </div>
+
             <motion.div
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               className="glass-card p-4 md:p-5 border-primary/30 relative"
@@ -512,12 +545,12 @@ export default function Classify() {
               <Button
                 onClick={analyze}
                 disabled={analyzing || (!text.trim() && !imageUrl)}
-                className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-xl h-11 shadow-lg shadow-primary/30"
+                className="w-full mt-4 bg-saffron hover:bg-saffron/90 text-saffron-foreground gap-2 rounded-xl h-11 shadow-civic"
               >
                 {analyzing ? (
-                  <><Brain className="w-4 h-4 animate-pulse" /> AI is analyzing your complaint…</>
+                  <><Brain className="w-4 h-4 animate-pulse" /> AI Analysis in progress…</>
                 ) : (
-                  <><Send className="w-4 h-4" /> Analyze with AI</>
+                  <><Brain className="w-4 h-4" /> AI Analysis</>
                 )}
               </Button>
             </motion.div>
@@ -531,22 +564,35 @@ export default function Classify() {
               />
             </div>
 
+            {/* Location picker — appears once we have an image or AI result */}
+            {(imageUrl || result) && !submittedId && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className="mt-5 glass-card p-4 border-saffron/25"
+              >
+                <LocationPicker value={location} onChange={setLocation} />
+              </motion.div>
+            )}
+
             {result && !submittedId && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="mt-4 glass-card p-4 border-accent/30 flex items-center gap-3"
+                className="mt-4 glass-card p-4 border-india-green/30 flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-accent" />
+                <div className="w-10 h-10 rounded-xl bg-india-green/15 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 text-india-green" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Routing</div>
                   <div className="text-sm font-semibold truncate">
-                    Assigned to: <span className="text-accent">{CATEGORY_DEPARTMENTS[result.category as ComplaintCategory] || result.department}</span>
+                    Assigned to: <span className="text-india-green">{CATEGORY_DEPARTMENTS[result.category as ComplaintCategory] || result.department}</span>
                   </div>
+                  {!location && (
+                    <div className="text-[10px] text-saffron mt-0.5">📍 Add a location above for faster resolution</div>
+                  )}
                 </div>
-                <Button onClick={fileComplaint} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5">
-                  File complaint <ArrowRight className="w-3.5 h-3.5" />
+                <Button onClick={fileComplaint} size="sm" className="bg-saffron text-saffron-foreground hover:bg-saffron/90 gap-1.5">
+                  Submit complaint <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </motion.div>
             )}
