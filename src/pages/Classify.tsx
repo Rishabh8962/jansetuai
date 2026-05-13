@@ -545,12 +545,12 @@ export default function Classify() {
               <Button
                 onClick={analyze}
                 disabled={analyzing || (!text.trim() && !imageUrl)}
-                className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-xl h-11 shadow-lg shadow-primary/30"
+                className="w-full mt-4 bg-saffron hover:bg-saffron/90 text-saffron-foreground gap-2 rounded-xl h-11 shadow-civic"
               >
                 {analyzing ? (
-                  <><Brain className="w-4 h-4 animate-pulse" /> AI is analyzing your complaint…</>
+                  <><Brain className="w-4 h-4 animate-pulse" /> AI Analysis in progress…</>
                 ) : (
-                  <><Send className="w-4 h-4" /> Analyze with AI</>
+                  <><Brain className="w-4 h-4" /> AI Analysis</>
                 )}
               </Button>
             </motion.div>
@@ -564,22 +564,35 @@ export default function Classify() {
               />
             </div>
 
+            {/* Location picker — appears once we have an image or AI result */}
+            {(imageUrl || result) && !submittedId && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className="mt-5 glass-card p-4 border-saffron/25"
+              >
+                <LocationPicker value={location} onChange={setLocation} />
+              </motion.div>
+            )}
+
             {result && !submittedId && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="mt-4 glass-card p-4 border-accent/30 flex items-center gap-3"
+                className="mt-4 glass-card p-4 border-india-green/30 flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-accent" />
+                <div className="w-10 h-10 rounded-xl bg-india-green/15 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 text-india-green" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Routing</div>
                   <div className="text-sm font-semibold truncate">
-                    Assigned to: <span className="text-accent">{CATEGORY_DEPARTMENTS[result.category as ComplaintCategory] || result.department}</span>
+                    Assigned to: <span className="text-india-green">{CATEGORY_DEPARTMENTS[result.category as ComplaintCategory] || result.department}</span>
                   </div>
+                  {!location && (
+                    <div className="text-[10px] text-saffron mt-0.5">📍 Add a location above for faster resolution</div>
+                  )}
                 </div>
-                <Button onClick={fileComplaint} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5">
-                  File complaint <ArrowRight className="w-3.5 h-3.5" />
+                <Button onClick={fileComplaint} size="sm" className="bg-saffron text-saffron-foreground hover:bg-saffron/90 gap-1.5">
+                  Submit complaint <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </motion.div>
             )}
