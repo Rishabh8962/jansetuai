@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw, MessageSquareHeart } from 'lucide-react';
+import { BarChart3, MapPin, Users, AlertTriangle, CheckCircle2, Clock, TrendingUp, Shield, ArrowLeft, Activity, Building2, Zap, ClipboardCheck, ThumbsUp, ThumbsDown, MessageSquare, Send, ShieldCheck, Eye, RotateCcw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import { CATEGORY_LABELS, getCategoryIcon, type Complaint } from '@/data/mockData';
 import { getComplaints, getDepartments, getWorkers, getReviewQueue, approveReview, rejectReview, getAllReviews, askAICopilot } from '@/data/store';
 import { useNavigate } from 'react-router-dom';
 import { useStoreRefresh } from '@/hooks/useStore';
-import CityMap from '@/components/GoogleCityMap';
+import CityMap from '@/components/CityMap';
 import BeforeAfterSlider from '@/components/BeforeAfterSlider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,9 +16,8 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { RealtimeNotificationBridge } from '@/components/RealtimeNotificationBridge';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
 import { AIPerformancePanel } from '@/components/AIPerformancePanel';
-import FeedbackPanel from '@/components/FeedbackPanel';
 
-type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review' | 'copilot' | 'feedback';
+type Tab = 'overview' | 'analytics' | 'map' | 'departments' | 'review' | 'copilot';
 
 export default function GovernmentDashboard() {
   useStoreRefresh();
@@ -80,7 +79,6 @@ export default function GovernmentDashboard() {
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'map', label: 'City Map', icon: MapPin },
     { id: 'departments', label: 'Depts', icon: Building2 },
-    { id: 'feedback', label: 'Feedback', icon: MessageSquareHeart },
   ];
 
   const CHART_COLORS = ['hsl(175, 80%, 50%)', 'hsl(260, 70%, 60%)', 'hsl(150, 70%, 45%)', 'hsl(38, 92%, 55%)', 'hsl(0, 72%, 55%)', 'hsl(200, 80%, 55%)', 'hsl(30, 80%, 50%)'];
@@ -439,12 +437,6 @@ export default function GovernmentDashboard() {
                 </div>
               ))}
             </div>
-          </motion.div>
-        )}
-
-        {tab === 'feedback' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <FeedbackPanel />
           </motion.div>
         )}
       </div>

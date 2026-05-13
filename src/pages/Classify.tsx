@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain, Send, Sparkles, Image as ImageIcon, Mic, MicOff, ArrowRight, Building2,
   ShieldCheck, Lightbulb, X, History, Zap, Bot, MapPin, Activity, ChevronDown,
-  CheckCircle2, Cpu, Network, Wrench, FileSearch, Users, BarChart3, Heart
+  CheckCircle2, Cpu, Network, Wrench, FileSearch
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,6 @@ import jansetuLogo from '@/assets/jansetu-logo.png';
 import { addComplaint, getComplaints } from '@/data/store';
 import type { Complaint } from '@/data/mockData';
 import { JanMitraAssistant } from '@/components/JanMitraAssistant';
-import FeedbackForm from '@/components/FeedbackForm';
 
 const HINT_RULES: { match: RegExp; label: string; tone: 'info' | 'warn' | 'ai' }[] = [
   { match: /\b(garbage|trash|waste|bin|dump|litter)\b/i, label: 'Looks like a Sanitation issue', tone: 'ai' },
@@ -193,9 +192,9 @@ export default function Classify() {
           <Link to="/citizen" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5 hidden sm:inline-flex items-center">
             <History className="w-3.5 h-3.5 inline mr-1" /> My complaints
           </Link>
-          <a href="#portals" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
+          <Link to="/portals" className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-white/5">
             Portals
-          </a>
+          </Link>
           <Button onClick={openForm} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl">
             Report Now
           </Button>
@@ -205,23 +204,6 @@ export default function Classify() {
       {/* HERO */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 pt-10 pb-12 text-center">
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Animated logo */}
-          <motion.div
-            className="relative w-24 h-24 mx-auto mb-6"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/40 via-accent/30 to-primary/40 blur-2xl animate-pulse" />
-            <div className="relative w-full h-full rounded-3xl glass-card flex items-center justify-center border border-primary/30 shadow-[0_0_40px_-8px_hsl(var(--primary)/0.6)]">
-              <img src={jansetuLogo} alt="JanMitra AI logo" className="w-14 h-14 rounded-2xl" />
-            </div>
-            <motion.div
-              className="absolute -inset-2 rounded-3xl border border-primary/20"
-              animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0, 0.6] }}
-              transition={{ duration: 2.5, repeat: Infinity }}
-            />
-          </motion.div>
-
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-card text-xs text-muted-foreground mb-5">
             <Sparkles className="w-3 h-3 text-accent" /> AI-powered grievance classification system
           </div>
@@ -310,76 +292,7 @@ export default function Classify() {
         </div>
       </section>
 
-      {/* PORTALS */}
-      <section id="portals" className="relative z-10 max-w-5xl mx-auto px-4 pb-14">
-        <div className="text-center mb-6">
-          <div className="section-title mb-1">Choose your portal</div>
-          <h2 className="text-2xl font-bold">Three apps, one platform</h2>
-          <p className="text-sm text-muted-foreground mt-2">Tailored experiences for citizens, field workers and authorities.</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-4">
-          {[
-            {
-              id: 'citizen',
-              title: 'Citizen Portal',
-              desc: 'Snap a photo. AI detects the issue and routes it to the right department.',
-              icon: Users,
-              path: '/citizen',
-              gradient: 'from-primary to-accent',
-              tags: ['AI Vision', 'Camera', 'Tracking', 'Voice'],
-            },
-            {
-              id: 'worker',
-              title: 'Field Worker',
-              desc: 'Get assigned tasks, navigate, and upload before/after repair proof.',
-              icon: Wrench,
-              path: '/worker',
-              gradient: 'from-warning to-destructive',
-              tags: ['Task Queue', 'Navigation', 'Proof', 'AI Verify'],
-            },
-            {
-              id: 'dashboard',
-              title: 'Command Center',
-              desc: 'Real-time analytics, GIS map, AI Copilot, and approval workflow.',
-              icon: BarChart3,
-              path: '/dashboard',
-              gradient: 'from-accent to-primary',
-              tags: ['Analytics', 'GIS Map', 'Copilot', 'Trust Score'],
-            },
-          ].map((role, i) => (
-            <motion.button
-              key={role.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              onClick={() => navigate(role.path)}
-              className="glass-card glass-card-hover p-6 text-left group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: 'var(--gradient-glow)' }} />
-              <div className="relative z-10">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${role.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <role.icon className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <h3 className="text-lg font-bold mb-1">{role.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{role.desc}</p>
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {role.tags.map(t => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground">{t}</span>
-                  ))}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-primary font-medium">
-                  Open portal <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                </div>
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </section>
-
       {/* FORM (toggled) */}
-
       <AnimatePresence>
         {showForm && (
           <motion.section
@@ -591,36 +504,8 @@ export default function Classify() {
         )}
       </AnimatePresence>
 
-      {/* FEEDBACK */}
-      <section id="feedback" className="relative z-10 max-w-3xl mx-auto px-4 pb-14">
-        <div className="text-center mb-6">
-          <div className="section-title mb-1">We listen</div>
-          <h2 className="text-2xl font-bold">Help us improve JanMitra AI</h2>
-          <p className="text-sm text-muted-foreground mt-2">Your feedback reaches the Command Center directly.</p>
-        </div>
-        <FeedbackForm />
-      </section>
-
-      {/* FOOTER */}
-      <footer className="relative z-10 border-t border-white/10 mt-8">
-        <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <img src={jansetuLogo} alt="JanMitra AI" className="w-8 h-8 rounded-lg" />
-            <div className="text-sm">
-              <span className="font-bold text-foreground">JanMitra</span>{' '}
-              <span className="gradient-text font-bold">AI</span>
-              <div className="text-[11px] text-muted-foreground">Smart civic governance, powered by AI</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            Made with <Heart className="w-3.5 h-3.5 text-destructive fill-destructive" /> by{' '}
-            <span className="font-semibold gradient-text">TechnoSquad</span>
-          </div>
-        </div>
-      </footer>
-
       {/* Floating JanMitra assistant */}
-      <JanMitraAssistant onAction={(a) => { if (a === 'report_issue' || a === 'start_complaint') openForm(); }} />
+      <JanMitraAssistant role="citizen" onAction={(a) => { if (a === 'report_issue') openForm(); }} />
     </div>
   );
 }
